@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Master Energy Diagnostic</title>
+    <style>
+        body { background: #050505; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; }
+        #ui-panel { width: 350px; background: rgba(15, 15, 15, 0.9); padding: 20px; z-index: 10; height: 100vh; overflow-y: auto; border-right: 1px solid #333; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+        canvas { flex-grow: 1; background: #000; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
+        input[type="text"], input[type="date"], input[type="range"] { width: 100%; box-sizing: border-box; background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; }
+        button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-analys { background: #6200ea; color: white; }
+        .btn-save { background: #00c853; color: white; }
+        #report { margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; font-size: 14px; line-height: 1.4; display: none; }
+        h2 { color: #7c4dff; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <div id="ui-panel">
+        <h2>Диагностика 3.0</h2>
+        <div class="input-group">
+            <label>Имя пользователя</label>
+            <input type="text" id="userName" placeholder="Введите имя...">
+        </div>
+        <div class="input-group">
+            <label>Дата рождения</label>
+            <input type="date" id="birthDate">
+        </div>
+        <hr style="border: 0.5px solid #333; margin: 20px 0;">
+        
+        <div class="input-group"><label>Жизненный тонус</label><input type="range" id="q1" min="1" max="10"></div>
+        <div class="input-group"><label>Ментальный покой</label><input type="range" id="q2" min="1" max="10"></div>
+        <div class="input-group"><label>Творческая искра</label><input type="range" id="q3" min="1" max="10"></div>
+        <div class="input-group"><label>Социальный открытость</label><input type="range" id="q4" min="1" max="10"></div>
+        <div class="input-group"><label>Качество сна</label><input type="range" id="q5" min="1" max="10"></div>
+
+        <button class="btn-analys" onclick="startDiagnostic()">ЗАПУСТИТЬ АНАЛИЗ</button>
+        <button class="btn-save" onclick="saveCertificate()">СКАЧАТЬ СЕРТИФИКАТ</button>
+
+        <div id="report"></div>
+    </div>
+
+    <canvas id="auraCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('auraCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let animationId;
+    let config = { color: '#6200ea', size: 5, speed: 0.01, name: '', date: '' };
+
+    function resize() {
+        canvas.width = window.innerWidth - 350;
+        canvas.height = window.innerHeight;
+    }
+    window.onresize = resize;
+    resize();
+
+    class Particle {
+        constructor() {
+            this.reset();
+        }
+        reset() {
+            this.angle = Math.random() * Math.PI * 2;
+            this.dist = Math.random() * (config.size * 20) + 50;
+            this.x = canvas.width / 2;
+            this.y = canvas.height / 2;
+            this.size = Math.random() * 3;
+            this.speed = (Math.random() * 0.02 + 0.005) * (config.speed * 10);
+            this.alpha = Math.random();
+        }
+        update() {
+            this.angle += this.speed;
+            this.x = canvas.width / 2 + Math.cos(this.angle) * this.dist;
+            this.y = canvas.height / 2 + Math.sin(this.angle) * this.dist;
+            if (Math.random() > 0.99) this.alpha = Math.random();
+        }
+        draw() {
+            ctx.fillStyle = config.color;
+            ctx.globalAlpha = this.alpha;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function stringToHex(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        let c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+        return "#" + "00000".substring(0, 6 - c.length) + c;
+    }
+
+    function generateReport(score) {
+        const reportDiv = document.getElementById('report');
+        reportDiv.style.display = 'block';
+        let text = "";
+        if (score > 40) text = "Ваше энергетическое поле в зените. Высокая концентрация частиц указывает на мощный творческий потенциал.";
+        else if (score > 25) text = "Стабильное состояние. Поле гармонично, наблюдается баланс между отдыхом и активностью.";
+        else text = "Поле требует подзарядки. Низкая плотность вибраций может быть следствием переутомления.";
+        
+        reportDiv.innerHTML = `<strong>Результат:</strong><br>${text}`;
+    }
+
+    function startDiagnostic() {
+        if(animationId) cancelAnimationFrame(animationId);
+        
+        const name = document.getElementById('userName').value || "Неизвестный странник";
+        config.name = name;
+        config.date = new Date().toLocaleDateString();
+        config.color = stringToHex(name);
+        
+        const qSum = [1,2,3,4,5].reduce((acc, n) => acc + parseInt(document.getElementById('q'+n).value), 0);
+        config.size = qSum;
+        config.speed = qSum / 50;
+
+        generateReport(qSum);
+
+        particles = [];
+        for(let i = 0; i < 300; i++) particles.push(new Particle());
+        
+        animate();
+    }
+
+    function animate() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+
+        animationId = requestAnimationFrame(animate);
+    }
+
+    function saveCertificate() {
+        // Отрисовка финального кадра для сертификата
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Рисуем частицы один раз на чистом фоне
+        particles.forEach(p => p.draw());
+
+        // Накладываем текст
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = "#fff";
+        ctx.font = "20px Arial";
+        ctx.fillText("ЭНЕРГЕТИЧЕСКИЙ СЕРТИФИКАТ", 30, 50);
+        
+        ctx.font = "14px Arial";
+        ctx.fillStyle = config.color;
+        ctx.fillText(`Владелец: ${config.name}`, 30, 80);
+        ctx.fillStyle = "#888";
+        ctx.fillText(`Дата диагностики: ${config.date}`, 30, 100);
+        ctx.fillText(`Индекс поля: ${config.size}/50`, 30, 120);
+
+        const link = document.createElement('a');
+        link.download = 'energy-certificate.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+</script>
+</body>
+</html>

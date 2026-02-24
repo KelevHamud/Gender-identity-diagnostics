@@ -2,43 +2,72 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Master Energy Diagnostic</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Aura Master 4.0</title>
     <style>
-        body { background: #050505; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; display: flex; }
-        #ui-panel { width: 350px; background: rgba(15, 15, 15, 0.9); padding: 20px; z-index: 10; height: 100vh; overflow-y: auto; border-right: 1px solid #333; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
-        canvas { flex-grow: 1; background: #000; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; color: #888; margin-bottom: 5px; }
-        input[type="text"], input[type="date"], input[type="range"] { width: 100%; box-sizing: border-box; background: #222; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 5px; }
-        button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-analys { background: #6200ea; color: white; }
-        .btn-save { background: #00c853; color: white; }
-        #report { margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; font-size: 14px; line-height: 1.4; display: none; }
-        h2 { color: #7c4dff; margin-top: 0; }
+        :root { --primary: #7c4dff; --bg: #050505; --panel: rgba(15, 15, 15, 0.95); }
+        body { background: var(--bg); color: #e0e0e0; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; overflow: hidden; display: flex; }
+        
+        /* Панель управления */
+        #ui-panel { 
+            width: 350px; background: var(--panel); padding: 25px; z-index: 10; 
+            height: 100vh; overflow-y: auto; border-right: 1px solid #333; 
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5); display: flex; flex-direction: column;
+        }
+        
+        h2 { color: var(--primary); margin-top: 0; letter-spacing: 1px; text-transform: uppercase; font-size: 1.2rem; }
+        .input-group { margin-bottom: 18px; }
+        label { display: block; font-size: 11px; color: #777; margin-bottom: 6px; text-transform: uppercase; }
+        
+        input[type="text"], input[type="date"], input[type="range"] { 
+            width: 100%; box-sizing: border-box; background: #151515; border: 1px solid #333; 
+            color: #fff; padding: 12px; border-radius: 8px; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(124, 77, 255, 0.2); }
+
+        button { 
+            width: 100%; padding: 14px; margin-top: 12px; border-radius: 8px; border: none; 
+            cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.4s; 
+        }
+        .btn-analys { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(124, 77, 255, 0.3); }
+        .btn-analys:hover { background: #9575cd; transform: translateY(-2px); }
+        .btn-save { background: transparent; color: #00c853; border: 1px solid #00c853; margin-top: 10px; }
+        .btn-save:hover { background: #00c853; color: #fff; }
+
+        #report { 
+            margin-top: 25px; padding: 15px; background: rgba(124, 77, 255, 0.1); 
+            border-left: 3px solid var(--primary); border-radius: 4px; font-size: 13px; 
+            line-height: 1.6; display: none; animation: fadeIn 1s;
+        }
+
+        canvas { flex-grow: 1; cursor: crosshair; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div id="ui-panel">
-        <h2>Диагностика 3.0</h2>
+        <h2>Диагностика Поля</h2>
+        
         <div class="input-group">
-            <label>Имя пользователя</label>
-            <input type="text" id="userName" placeholder="Введите имя...">
+            <label>Имя</label>
+            <input type="text" id="userName" placeholder="Введите имя для цвета...">
         </div>
         <div class="input-group">
             <label>Дата рождения</label>
             <input type="date" id="birthDate">
         </div>
-        <hr style="border: 0.5px solid #333; margin: 20px 0;">
         
-        <div class="input-group"><label>Жизненный тонус</label><input type="range" id="q1" min="1" max="10"></div>
-        <div class="input-group"><label>Ментальный покой</label><input type="range" id="q2" min="1" max="10"></div>
-        <div class="input-group"><label>Творческая искра</label><input type="range" id="q3" min="1" max="10"></div>
-        <div class="input-group"><label>Социальный открытость</label><input type="range" id="q4" min="1" max="10"></div>
-        <div class="input-group"><label>Качество сна</label><input type="range" id="q5" min="1" max="10"></div>
+        <hr style="border: 0; border-top: 1px solid #333; margin: 10px 0 20px 0;">
+        
+        <div class="input-group"><label>Энергия</label><input type="range" id="q1" min="1" max="10" value="7"></div>
+        <div class="input-group"><label>Спокойствие</label><input type="range" id="q2" min="1" max="10" value="5"></div>
+        <div class="input-group"><label>Креатив</label><input type="range" id="q3" min="1" max="10" value="8"></div>
+        <div class="input-group"><label>Сон</label><input type="range" id="q4" min="1" max="10" value="6"></div>
 
-        <button class="btn-analys" onclick="startDiagnostic()">ЗАПУСТИТЬ АНАЛИЗ</button>
-        <button class="btn-save" onclick="saveCertificate()">СКАЧАТЬ СЕРТИФИКАТ</button>
+        <button class="btn-analys" onclick="startDiagnostic()">Запустить Вспышку</button>
+        <button class="btn-save" onclick="saveCertificate()">Скачать PNG</button>
 
         <div id="report"></div>
     </div>
@@ -50,7 +79,15 @@
     const ctx = canvas.getContext('2d');
     let particles = [];
     let animationId;
-    let config = { color: '#6200ea', size: 5, speed: 0.01, name: '', date: '' };
+    let mouse = { x: -1000, y: -1000 };
+    let config = { color: '#7c4dff', size: 5, speed: 0.01, name: '', date: '', isExploding: false };
+
+    // Обработка мыши
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+    });
 
     function resize() {
         canvas.width = window.innerWidth - 350;
@@ -60,24 +97,54 @@
     resize();
 
     class Particle {
-        constructor() {
-            this.reset();
+        constructor(isBurst = false) {
+            this.reset(isBurst);
         }
-        reset() {
+        reset(isBurst) {
             this.angle = Math.random() * Math.PI * 2;
-            this.dist = Math.random() * (config.size * 20) + 50;
+            this.dist = isBurst ? 2 : Math.random() * (config.size * 20) + 50;
+            
+            // Если вспышка, задаем огромную скорость разлета из центра
+            this.velX = isBurst ? (Math.random() - 0.5) * 50 : 0;
+            this.velY = isBurst ? (Math.random() - 0.5) * 50 : 0;
+            
             this.x = canvas.width / 2;
             this.y = canvas.height / 2;
-            this.size = Math.random() * 3;
-            this.speed = (Math.random() * 0.02 + 0.005) * (config.speed * 10);
+            this.size = Math.random() * 2 + 1;
+            this.orbitSpeed = (Math.random() * 0.02 + 0.005) * (config.speed * 5);
             this.alpha = Math.random();
+            this.friction = 0.95; // Сопротивление для затухания взрыва
         }
+
         update() {
-            this.angle += this.speed;
-            this.x = canvas.width / 2 + Math.cos(this.angle) * this.dist;
-            this.y = canvas.height / 2 + Math.sin(this.angle) * this.dist;
-            if (Math.random() > 0.99) this.alpha = Math.random();
+            if (Math.abs(this.velX) > 0.1 || Math.abs(this.velY) > 0.1) {
+                // Логика взрыва (свободное движение с торможением)
+                this.x += this.velX;
+                this.y += this.velY;
+                this.velX *= this.friction;
+                this.velY *= this.friction;
+            } else {
+                // Логика возвращения в орбиту
+                this.angle += this.orbitSpeed;
+                let targetX = canvas.width / 2 + Math.cos(this.angle) * this.dist;
+                let targetY = canvas.height / 2 + Math.sin(this.angle) * this.dist;
+
+                // Взаимодействие с мышью
+                let dx = mouse.x - targetX;
+                let dy = mouse.y - targetY;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 150) {
+                    let force = (150 - distance) / 150;
+                    targetX += dx * force * 0.5;
+                    targetY += dy * force * 0.5;
+                }
+
+                // Плавное следование к своей точке орбиты
+                this.x += (targetX - this.x) * 0.05;
+                this.y += (targetY - this.y) * 0.05;
+            }
         }
+
         draw() {
             ctx.fillStyle = config.color;
             ctx.globalAlpha = this.alpha;
@@ -94,39 +161,34 @@
         return "#" + "00000".substring(0, 6 - c.length) + c;
     }
 
-    function generateReport(score) {
-        const reportDiv = document.getElementById('report');
-        reportDiv.style.display = 'block';
-        let text = "";
-        if (score > 40) text = "Ваше энергетическое поле в зените. Высокая концентрация частиц указывает на мощный творческий потенциал.";
-        else if (score > 25) text = "Стабильное состояние. Поле гармонично, наблюдается баланс между отдыхом и активностью.";
-        else text = "Поле требует подзарядки. Низкая плотность вибраций может быть следствием переутомления.";
-        
-        reportDiv.innerHTML = `<strong>Результат:</strong><br>${text}`;
-    }
-
     function startDiagnostic() {
         if(animationId) cancelAnimationFrame(animationId);
         
-        const name = document.getElementById('userName').value || "Неизвестный странник";
+        const name = document.getElementById('userName').value || "Душа";
         config.name = name;
         config.date = new Date().toLocaleDateString();
         config.color = stringToHex(name);
         
-        const qSum = [1,2,3,4,5].reduce((acc, n) => acc + parseInt(document.getElementById('q'+n).value), 0);
+        const qSum = [1,2,3,4].reduce((acc, n) => acc + parseInt(document.getElementById('q'+n).value), 0);
         config.size = qSum;
-        config.speed = qSum / 50;
+        config.speed = qSum / 40;
 
-        generateReport(qSum);
+        // Отчет
+        const report = document.getElementById('report');
+        report.style.display = 'block';
+        report.innerHTML = `<strong>Анализ завершен:</strong><br>Цвет "${config.color}" указывает на уникальный резонанс. Индекс активности: ${qSum * 2.5}%.`;
 
+        // Создаем частицы для эффекта вспышки
         particles = [];
-        for(let i = 0; i < 300; i++) particles.push(new Particle());
+        for(let i = 0; i < 600; i++) {
+            particles.push(new Particle(true));
+        }
         
         animate();
     }
 
     function animate() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillStyle = 'rgba(5, 5, 5, 0.2)'; // Хвосты за частицами
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         particles.forEach(p => {
@@ -138,29 +200,39 @@
     }
 
     function saveCertificate() {
-        // Отрисовка финального кадра для сертификата
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Рисуем частицы один раз на чистом фоне
-        particles.forEach(p => p.draw());
+        // Рендерим чистый кадр для сохранения
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tCtx = tempCanvas.getContext('2d');
 
-        // Накладываем текст
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = "#fff";
-        ctx.font = "20px Arial";
-        ctx.fillText("ЭНЕРГЕТИЧЕСКИЙ СЕРТИФИКАТ", 30, 50);
+        tCtx.fillStyle = "#050505";
+        tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+        // Переносим частицы
+        particles.forEach(p => {
+            tCtx.fillStyle = config.color;
+            tCtx.globalAlpha = p.alpha;
+            tCtx.beginPath();
+            tCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            tCtx.fill();
+        });
+
+        // Текст сертификата
+        tCtx.globalAlpha = 1;
+        tCtx.fillStyle = "#fff";
+        tCtx.font = "bold 28px sans-serif";
+        tCtx.fillText("ENERGY ANALYSIS", 40, 60);
         
-        ctx.font = "14px Arial";
-        ctx.fillStyle = config.color;
-        ctx.fillText(`Владелец: ${config.name}`, 30, 80);
-        ctx.fillStyle = "#888";
-        ctx.fillText(`Дата диагностики: ${config.date}`, 30, 100);
-        ctx.fillText(`Индекс поля: ${config.size}/50`, 30, 120);
+        tCtx.font = "14px monospace";
+        tCtx.fillStyle = config.color;
+        tCtx.fillText(`SUBJECT: ${config.name.toUpperCase()}`, 40, 100);
+        tCtx.fillStyle = "#666";
+        tCtx.fillText(`DATE: ${config.date} | VIBRATION: ${config.size * 2}`, 40, 125);
 
         const link = document.createElement('a');
-        link.download = 'energy-certificate.png';
-        link.href = canvas.toDataURL();
+        link.download = `Aura_${config.name}.png`;
+        link.href = tempCanvas.toDataURL();
         link.click();
     }
 </script>

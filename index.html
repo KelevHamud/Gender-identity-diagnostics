@@ -2,157 +2,117 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Identity Insight: BSRI</title>
+    <title>BSRI: Глубокая психодиагностика</title>
     <style>
-        :root { 
-            --bg: #F5F5F7; 
-            --text: #1D1D1F; 
-            --accent: #0071E3; 
-            --card: #FFFFFF; 
-        }
-        
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
-            background-color: var(--bg); 
-            color: var(--text); 
-            margin: 0; padding: 40px 20px;
-            display: flex; justify-content: center;
-            transition: background-color 0.6s ease;
-        }
-
+        :root { --bg: #F5F5F7; --text: #1D1D1F; --accent: #0071E3; --card: #FFFFFF; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 60px 20px; display: flex; justify-content: center; margin: 0; transition: background-color 0.6s ease; }
         .container { max-width: 500px; width: 100%; }
-        
-        .card { 
-            background: var(--card); 
-            padding: 40px; 
-            border-radius: 30px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1); 
-            text-align: center;
-            transition: all 0.6s ease;
-        }
-
-        .progress-bar { width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
-        #fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
-
-        .question-text { font-size: 26px; font-weight: 600; margin: 30px 0; min-height: 100px; line-height: 1.3; }
-
-        .btn-group { display: flex; gap: 15px; justify-content: center; }
-        
-        button { 
-            padding: 18px 45px; border-radius: 980px; border: none; 
-            font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 17px; 
-        }
-
+        .card { background: var(--card); padding: 40px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); text-align: center; }
+        .question-text { font-size: 26px; font-weight: 600; margin: 40px 0; min-height: 100px; }
+        button { padding: 18px 45px; border-radius: 980px; border: none; font-weight: 600; cursor: pointer; margin: 5px; font-size: 17px; }
         .yes { background: var(--accent); color: white; }
-        .no { background: rgba(0,0,0,0.05); color: var(--text); }
-        
-        button:hover { transform: translateY(-3px); filter: brightness(1.1); }
-
-        .analysis-box { text-align: left; background: rgba(0,0,0,0.03); padding: 25px; border-radius: 20px; margin-top: 20px; line-height: 1.6; border-left: 5px solid var(--accent); }
-        .hidden { display: none; }
+        .no { background: #E5E5EA; color: #3A3A3C; }
+        .analysis-box { text-align: left; background: rgba(0,0,0,0.03); padding: 25px; border-radius: 20px; margin-top: 20px; line-height: 1.7; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="card" id="start">
-        <h1>Identity Insight</h1>
-        <p>Выберите пол для активации профиля:</p>
-        <div class="btn-group" style="flex-direction: column;">
-            <button class="yes" style="background:#0071E3;" onclick="startQuiz('male')">Мужчина</button>
-            <button class="yes" style="background:#FF3B30;" onclick="startQuiz('female')">Женщина</button>
-        </div>
+        <h1>BSRI Psychometrics</h1>
+        <p>Выберите пол для калибровки нормативной модели:</p>
+        <button class="yes" onclick="startQuiz('male')">Мужчина</button>
+        <button class="yes" style="background:#D81B60;" onclick="startQuiz('female')">Женщина</button>
     </div>
 
     <div class="card hidden" id="quiz">
-        <div class="progress-bar"><div id="fill"></div></div>
         <div id="q-text" class="question-text"></div>
-        <div class="btn-group">
+        <div id="buttons">
             <button class="no" onclick="answer(0)">Нет</button>
-            <button class="yes" id="main-yes" onclick="answer(1)">Да</button>
+            <button class="yes" onclick="answer(1)">Да</button>
         </div>
     </div>
 
     <div class="card hidden" id="result">
-        <h1>Ваш отчет</h1>
-        <div id="report-text"></div>
-        <button class="yes" id="reset-btn" style="width:100%; margin-top:30px;" onclick="location.reload()">Пройти заново</button>
+        <div id="report-text" style="text-align: left;"></div>
+        <button class="yes" style="width:100%; margin-top:30px;" onclick="location.reload()">Начать заново</button>
     </div>
 </div>
 
 <script>
     const items = [
-        {t: "Самостоятельный", type: "M"}, {t: "Уступчивый", type: "F"}, {t: "Помощник", type: "N"},
-        {t: "Решительный", type: "M"}, {t: "Мягкий", type: "F"}, {t: "Искренний", type: "N"},
-        {t: "Рисковый", type: "M"}, {t: "Заботливый", type: "F"}, {t: "Надежный", type: "N"},
-        // ... здесь должны быть все 60 вопросов из предыдущих списков
-        {t: "Лидер", type: "M"}, {t: "Эмпатичный", type: "F"}, {t: "Аккуратный", type: "N"},
-        {t: "Агрессивный", type: "M"}, {t: "Чувствительный", type: "F"}, {t: "Спокойный", type: "N"},
-        {t: "Независимый", type: "M"}, {t: "Нежный", type: "F"}, {t: "Честный", type: "N"}
-        // (Для краткости я оставил часть, добавьте остальные по аналогии до 60)
+        {t: "Самостоятельный", type: "M"}, {t: "Ласковый", type: "F"}, {t: "Аккуратный", type: "N"},
+        {t: "Амбициозный", type: "M"}, {t: "Чувствительный", type: "F"}, {t: "Надежный", type: "N"},
+        {t: "Аналитичный", type: "M"}, {t: "Заботливый", type: "F"}, {t: "Веселый", type: "N"},
+        {t: "Напористый", type: "M"}, {t: "Мягкий", type: "F"}, {t: "Скромный", type: "N"},
+        {t: "Конкурентный", type: "M"}, {t: "Эмпатичный", type: "F"}, {t: "Искренний", type: "N"},
+        {t: "Решительный", type: "M"}, {t: "Миролюбивый", type: "F"}, {t: "Пунктуальный", type: "N"},
+        {t: "Доминирующий", type: "M"}, {t: "Нежный", type: "F"}, {t: "Сдержанный", type: "N"},
+        {t: "Лидер", type: "M"}, {t: "Сердечный", type: "F"}, {t: "Дружелюбный", type: "N"},
+        {t: "Сильный", type: "M"}, {t: "Доверчивый", type: "F"}, {t: "Оптимистичный", type: "N"},
+        {t: "Независимый", type: "M"}, {t: "Понимающий", type: "F"}, {t: "Любопытный", type: "N"},
+        {t: "Агрессивный", type: "M"}, {t: "Уступчивый", type: "F"}, {t: "Терпеливый", type: "N"},
+        {t: "Мужественный", type: "M"}, {t: "Женственный", type: "F"}, {t: "Честный", type: "N"},
+        {t: "Деловой", type: "M"}, {t: "Эмоциональный", type: "F"}, {t: "Спокойный", type: "N"},
+        {t: "Смелый", type: "M"}, {t: "Милосердный", type: "F"}, {t: "Внимательный", type: "N"},
+        {t: "Самодостаточный", type: "M"}, {t: "Скромный", type: "F"}, {t: "Творческий", type: "N"},
+        {t: "Рациональный", type: "M"}, {t: "Сопереживающий", type: "F"}, {t: "Ответственный", type: "N"},
+        {t: "Склонный к риску", type: "M"}, {t: "Теплый", type: "F"}, {t: "Застенчивый", type: "N"},
+        {t: "Уверенный", type: "M"}, {t: "Чувственный", type: "F"}, {t: "Талантливый", type: "N"},
+        {t: "Индивидуалист", type: "M"}, {t: "Домашний", type: "F"}, {t: "Упрямый", type: "N"},
+        {t: "Настойчивый", type: "M"}, {t: "Покладистый", type: "F"}, {t: "Загадочный", type: "N"}
     ];
 
-    let current = 0, mScore = 0, fScore = 0, userGender = "";
-    let missedTraits = [];
+    let current = 0, mScore = 0, fScore = 0, nScore = 0, userGender = "";
 
     function startQuiz(gender) {
         userGender = gender;
-        const root = document.documentElement;
-        
-        if (gender === 'male') {
-            root.style.setProperty('--bg', '#E0E8F0'); // Голубой фон
-            root.style.setProperty('--accent', '#0055BB'); // Синий акцент
-            root.style.setProperty('--card', '#FFFFFF');
-        } else {
-            root.style.setProperty('--bg', '#FCE4EC'); // Розовый фон
-            root.style.setProperty('--accent', '#D81B60'); // Малиновый акцент
-            root.style.setProperty('--card', '#FFF9FB');
-        }
-
+        document.documentElement.style.setProperty('--bg', gender === 'male' ? '#E0E8F0' : '#FCE4EC');
+        document.documentElement.style.setProperty('--accent', gender === 'male' ? '#0071E3' : '#D81B60');
         document.getElementById('start').classList.add('hidden');
         document.getElementById('quiz').classList.remove('hidden');
         showQ();
     }
 
-    function showQ() {
-        document.getElementById('q-text').innerText = items[current].t;
-        document.getElementById('fill').style.width = `${((current + 1) / items.length) * 100}%`;
-    }
+    function showQ() { document.getElementById('q-text').innerText = items[current].t; }
 
     function answer(val) {
         if(val === 1) {
             if(items[current].type === 'M') mScore++;
             if(items[current].type === 'F') fScore++;
-        } else {
-            if(items[current].type === (userGender === 'male' ? 'M' : 'F')) {
-                missedTraits.push(items[current].t);
-            }
+            if(items[current].type === 'N') nScore++;
         }
         current++;
-        if(current < items.length) showQ();
-        else finish();
+        current < items.length ? showQ() : finish();
     }
 
     function finish() {
         document.getElementById('quiz').classList.add('hidden');
         document.getElementById('result').classList.remove('hidden');
         
-        let matrix = (mScore >= 8 && fScore >= 8) ? "Андрогинный" : (mScore > fScore) ? "Маскулинный" : "Фемининный";
-        
-        let rec = "";
-        if(userGender === 'male' && fScore > mScore) {
-            rec = `У вас преобладают экспрессивные черты. Чтобы усилить мужественность, попробуйте внедрить: <b>${missedTraits.slice(0,3).join(', ')}</b>.`;
-        } else if(userGender === 'female' && mScore > fScore) {
-            rec = `У вас развиты лидерские черты. Для баланса обратите внимание на: <b>${missedTraits.slice(0,3).join(', ')}</b>.`;
-        } else {
-            rec = "Вы находитесь в своем базовом профиле. Стремитесь к развитию противоположных качеств для гибкости.";
-        }
-
-        document.getElementById('report-text').innerHTML = `
-            <div style="font-size:22px; margin-bottom:10px;">Профиль: <strong>${matrix}</strong></div>
+        let report = `
+            <h2 style="text-align:center">Аналитический отчет</h2>
             <div class="analysis-box">
-                <strong>Рекомендация:</strong><br>${rec}
+                <strong>Количественный профиль:</strong><br>
+                Инструментальность (M): ${mScore}/20<br>
+                Экспрессивность (F): ${fScore}/20<br>
+                Социальная гибкость (N): ${nScore}/20
+            </div>
+            <div class="analysis-box">
+                <strong>Психологическая интерпретация:</strong><br>
+                ${generateDeepAnalysis()}
             </div>`;
+        document.getElementById('report-text').innerHTML = report;
+    }
+
+    function generateDeepAnalysis() {
+        let text = "";
+        if (mScore >= 14 && fScore >= 14) text = "Вы обладаете <b>андрогинным профилем высшего порядка</b>. Психологически вы не ограничены гендерными стереотипами. Ваша структура личности опирается на интеграцию противоположностей (агентность и общинность), что обеспечивает максимальную адаптивность к кризисам и социальным изменениям.";
+        else if (mScore > fScore) text = "Ваш профиль тяготеет к <b>инструментальной доминанте</b>. Вы ориентированы на покорение пространства и достижение целей. Однако, если разрыв между M и F велик, ваша теневая сторона (эмпатия и экспрессия) может быть вытеснена, что создает риск «эмоционального очерствения» как защитной реакции.";
+        else text = "Ваш профиль характеризуется <b>экспрессивной доминантой</b>. Вы ориентированы на поддержание отношений и гармонизацию среды. Риск заключается в потенциальной недооценке собственной субъектности (способности отстаивать границы) в угоду сохранения целостности группы.";
+        
+        text += `<br><br><strong>Мета-рекомендация:</strong> ${nScore < 10 ? "Обратите внимание на нейтральные качества — они являются мостом между вашими основными векторами." : "Ваш высокий уровень социальной гибкости (N) служит отличным буфером, позволяющим эффективно маневрировать между двумя основными ролями."}`;
+        return text;
     }
 </script>
 </body>

@@ -2,105 +2,87 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Анализ идентичности</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Гендерный профиль личности</title>
     <style>
-        :root { --bg: #F5F5F7; --card: #FFFFFF; --accent: #0071E3; --text: #1D1D1F; --gray: #86868B; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 60px 20px; margin: 0; }
-        .container { max-width: 550px; width: 100%; }
-        .card { background: var(--card); padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); }
-        h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.8px; text-align: center; }
-        .description { text-align: center; color: var(--gray); margin-bottom: 30px; line-height: 1.5; }
-        button { background: var(--accent); color: white; border: none; padding: 16px 24px; border-radius: 12px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 15px; font-size: 16px; transition: transform 0.2s, opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-        button:active { transform: scale(0.98); }
-        .option-btn { background: #F5F5F7; color: var(--text); border: 1px solid #D2D2D7; text-align: left; }
-        .question { display: none; }
-        .active { display: block; }
-        .result-box { margin-top: 30px; padding: 20px; background: #F5F5F7; border-radius: 16px; }
+        :root { --bg: #F5F5F7; --card: #FFFFFF; --accent: #0071E3; --text: #1D1D1F; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 40px 20px; display: flex; justify-content: center; }
+        .container { max-width: 600px; width: 100%; }
+        .card { background: var(--card); padding: 40px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        h1 { font-size: 28px; text-align: center; margin-bottom: 20px; }
+        .intro { color: #86868B; text-align: center; margin-bottom: 30px; }
+        button { background: var(--accent); color: white; border: none; padding: 15px 25px; border-radius: 980px; font-weight: 500; cursor: pointer; width: 100%; margin-top: 10px; }
+        .item { margin-bottom: 15px; }
+        select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #D2D2D7; margin-top: 5px; }
+        #result { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="setup" class="card active">
-        <h1>Identity Insight</h1>
-        <p class="description">Инструмент для диагностики архетипических паттернов вашей личности на основе методологии Сандры Бем.</p>
-        <button onclick="startQuiz('male')">Пройти (Мужской профиль)</button>
-        <button onclick="startQuiz('female')" style="background: #E53935;">Пройти (Женский профиль)</button>
+    <div id="quiz" class="card">
+        <h1>Анализ гендерных характеристик</h1>
+        <p class="intro">Этот тест помогает определить степень выраженности маскулинных и фемининных качеств в вашем характере. Оцените, насколько каждое из качеств описывает вас.</p>
+        <div id="questions"></div>
+        <button onclick="calculate()">Узнать результат</button>
     </div>
 
-    <div id="quiz-container" class="card" style="display:none;">
-        <div id="questions-wrapper"></div>
-    </div>
-
-    <div id="result" class="card" style="display:none;">
-        <h1>Ваш отчет</h1>
-        <canvas id="radarChart"></canvas>
-        <div id="archetype-details" class="result-box"></div>
-        <button onclick="location.reload()" style="background:#1D1D1F;">Начать заново</button>
+    <div id="result" class="card">
+        <h1>Ваш профиль</h1>
+        <div id="report"></div>
+        <button onclick="location.reload()">Пройти заново</button>
     </div>
 </div>
 
 <script>
-    const questions = [
-        { q: "Как вы обычно планируете проекты?", a: "Четкая иерархия и контроль", b: "Атмосфера доверия", c: "Инновации и смыслы", d: "Ожидание помощи" },
-        { q: "Ваша реакция на несправедливость?", a: "Защита границ", b: "Поиск компромисса", c: "Анализ урока", d: "Чувство бессилия" },
-        { q: "Что для вас означает 'сила'?", a: "Способность влиять", b: "Способность любить", c: "Способность понимать", d: "Способность выживать" },
-        { q: "Как вы действуете в стрессе?", a: "Концентрируюсь", b: "Ищу поддержку", c: "Ищу новые идеи", d: "Впадаю в ступор" },
-        // ... (добавьте оставшиеся вопросы)
+    const traits = [
+        { name: "Самостоятельность", type: "M" }, { name: "Заботливость", type: "F" },
+        { name: "Агрессивность", type: "M" }, { name: "Нежность", type: "F" },
+        { name: "Аналитичность", type: "M" }, { name: "Чувствительность", type: "F" },
+        { name: "Лидерские качества", type: "M" }, { name: "Уступчивость", type: "F" },
+        { name: "Решительность", type: "M" }, { name: "Эмпатия", type: "F" },
+        { name: "Соревновательность", type: "M" }, { name: "Склонность к сопереживанию", type: "F" },
+        { name: "Напористость", type: "M" }, { name: "Мягкость", type: "F" },
+        { name: "Сила воли", type: "M" }, { name: "Доброта", type: "F" },
+        { name: "Смелость", type: "M" }, { name: "Искренность", type: "F" },
+        { name: "Независимость", type: "M" }, { name: "Понимание", type: "F" }
     ];
 
-    let userGender, currentStep = 0;
-    let scores = { A: 0, B: 0, C: 0, D: 0 }; 
+    const qDiv = document.getElementById('questions');
+    traits.forEach((t, i) => {
+        qDiv.innerHTML += `<div class="item">
+            <label>${t.name}</label>
+            <select id="q${i}">
+                <option value="1">Почти никогда не описывает меня</option>
+                <option value="4">Средне</option>
+                <option value="7">Почти всегда описывает меня</option>
+            </select>
+        </div>`;
+    });
 
-    function startQuiz(gender) {
-        userGender = gender;
-        document.getElementById('setup').style.display = 'none';
-        document.getElementById('quiz-container').style.display = 'block';
-        renderQuestions();
-    }
-
-    function renderQuestions() {
-        const wrapper = document.getElementById('questions-wrapper');
-        questions.forEach((q, i) => {
-            const div = document.createElement('div');
-            div.className = `question ${i === 0 ? 'active' : ''}`;
-            div.innerHTML = `<h3>${q.q}</h3>
-                <button class="option-btn" onclick="next('A')">${q.a}</button>
-                <button class="option-btn" onclick="next('B')">${q.b}</button>
-                <button class="option-btn" onclick="next('C')">${q.c}</button>
-                <button class="option-btn" onclick="next('D')">${q.d}</button>`;
-            wrapper.appendChild(div);
+    function calculate() {
+        let m = 0, f = 0;
+        traits.forEach((t, i) => {
+            let val = parseInt(document.getElementById('q'+i).value);
+            t.type === "M" ? m += val : f += val;
         });
-    }
 
-    function next(code) {
-        scores[code]++;
-        document.querySelectorAll('.question')[currentStep].classList.remove('active');
-        currentStep++;
-        if (currentStep < questions.length) document.querySelectorAll('.question')[currentStep].classList.add('active');
-        else showResult();
-    }
+        m /= 10; f /= 10;
+        
+        let type = "";
+        if (m > 5 && f > 5) type = "Андрогинный тип (высокая гибкость).";
+        else if (m > 5) type = "Маскулинный тип (ориентация на достижение).";
+        else if (f > 5) type = "Фемининный тип (ориентация на отношения).";
+        else type = "Недифференцированный тип (низкая выраженность обоих начал).";
 
-    function showResult() {
-        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('quiz').style.display = 'none';
         document.getElementById('result').style.display = 'block';
-        
-        new Chart(document.getElementById('radarChart'), {
-            type: 'radar',
-            data: {
-                labels: ['Маскулинность', 'Фемининность', 'Андрогинность', 'Диффузность'],
-                datasets: [{ data: [scores.A*5, scores.B*5, scores.C*5, scores.D*5], backgroundColor: 'rgba(0, 113, 227, 0.2)', borderColor: '#0071E3' }]
-            }
-        });
-
-        let details = `<h3>Интерпретация:</h3>`;
-        if (scores.A > scores.B) details += `<p>В вас доминирует <b>активное маскулинное начало</b>. Вы ориентированы на достижение целей. Для баланса — попробуйте направить эту энергию на заботу и эмпатию.</p>`;
-        else details += `<p>В вас преобладает <b>фемининное начало</b>. Вы мастер создания гармонии. Для развития — попробуйте чаще брать на себя роль лидера и принимать жесткие решения.</p>`;
-        
-        details += `<p><b>Глубинная рекомендация:</b> Идеальный баланс достигается через интеграцию. ${userGender === 'male' ? 'Развитие Анимы (мягкости)' : 'Развитие Анимуса (твердости)'} поможет вам стать более целостной личностью.</p>`;
-        document.getElementById('archetype-details').innerHTML = details;
+        document.getElementById('report').innerHTML = `
+            <p>Ваши показатели: <b>Маскулинность: ${m.toFixed(1)}</b>, <b>Фемининность: ${f.toFixed(1)}</b>.</p>
+            <h3>Интерпретация: ${type}</h3>
+            <p>Согласно методологии, маскулинность и фемининность — это не противоположности, а два независимых измерения. 
+            Если вы получили высокие баллы по обеим шкалам, вы обладаете <b>андрогинной структурой личности</b> — это считается наиболее адаптированным типом в современном мире, так как позволяет проявлять как решительность (маскулинные черты), так и гибкость (фемининные черты) в зависимости от ситуации. 
+            Если преобладает одна шкала — это не «отклонение», а ваш текущий адаптивный стиль, который помогает вам достигать целей или сохранять отношения. Помните, что данные качества — это инструменты, которые можно развивать осознанно.</p>
+        `;
     }
 </script>
 </body>

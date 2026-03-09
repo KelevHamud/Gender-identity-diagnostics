@@ -65,10 +65,27 @@
 
     let current = 0, mScore = 0, fScore = 0, nScore = 0, userGender = "";
 
-    function startQuiz(gender) {
+  function startQuiz(gender) {
         userGender = gender;
-        document.documentElement.style.setProperty('--bg', gender === 'male' ? '#E0E8F0' : '#FCE4EC');
-        document.documentElement.style.setProperty('--accent', gender === 'male' ? '#0071E3' : '#D81B60');
+        
+        // Установка цветов фона и основного акцента
+        const root = document.documentElement;
+        if (gender === 'male') {
+            root.style.setProperty('--bg', '#E0E8F0');
+            root.style.setProperty('--accent', '#0071E3');
+            // Принудительно красим кнопку "Женщина" в синий (если бы она осталась видна)
+            document.querySelectorAll('button').forEach(btn => {
+                if(btn.innerText === "Женщина") btn.style.background = '#0071E3';
+            });
+        } else {
+            root.style.setProperty('--bg', '#FCE4EC');
+            root.style.setProperty('--accent', '#D81B60');
+            // Принудительно красим кнопку "Мужчина" в розовый/малиновый
+            document.querySelectorAll('button').forEach(btn => {
+                if(btn.innerText === "Мужчина") btn.style.background = '#D81B60';
+            });
+        }
+
         document.getElementById('start').classList.add('hidden');
         document.getElementById('quiz').classList.remove('hidden');
         showQ();

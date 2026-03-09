@@ -81,7 +81,13 @@
         showQ();
     }
 
-    function showQ() { document.getElementById('q-text').innerText = items[current].t; }
+    function showQ() {
+        let text = items[current].t;
+        if (userGender === 'female') {
+            text = text.replace(/ый$/, "ая").replace(/ий$/, "ая").replace(/ичный$/, "ичная").replace(/ный$/, "ная");
+        }
+        document.getElementById('q-text').innerText = text;
+    }
 
     function answer(val) {
         if(val === 1) {

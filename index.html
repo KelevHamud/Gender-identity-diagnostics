@@ -3,238 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energy Aura Master 4.0</title>
+    <title>Тест: Гендерно-архетипический профиль</title>
     <style>
-        :root { --primary: #7c4dff; --bg: #050505; --panel: rgba(15, 15, 15, 0.95); }
-        body { background: var(--bg); color: #e0e0e0; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; overflow: hidden; display: flex; }
-        
-        /* Панель управления */
-        #ui-panel { 
-            width: 350px; background: var(--panel); padding: 25px; z-index: 10; 
-            height: 100vh; overflow-y: auto; border-right: 1px solid #333; 
-            box-shadow: 10px 0 30px rgba(0,0,0,0.5); display: flex; flex-direction: column;
-        }
-        
-        h2 { color: var(--primary); margin-top: 0; letter-spacing: 1px; text-transform: uppercase; font-size: 1.2rem; }
-        .input-group { margin-bottom: 18px; }
-        label { display: block; font-size: 11px; color: #777; margin-bottom: 6px; text-transform: uppercase; }
-        
-        input[type="text"], input[type="date"], input[type="range"] { 
-            width: 100%; box-sizing: border-box; background: #151515; border: 1px solid #333; 
-            color: #fff; padding: 12px; border-radius: 8px; transition: 0.3s;
-        }
-        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 10px rgba(124, 77, 255, 0.2); }
-
-        button { 
-            width: 100%; padding: 14px; margin-top: 12px; border-radius: 8px; border: none; 
-            cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.4s; 
-        }
-        .btn-analys { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(124, 77, 255, 0.3); }
-        .btn-analys:hover { background: #9575cd; transform: translateY(-2px); }
-        .btn-save { background: transparent; color: #00c853; border: 1px solid #00c853; margin-top: 10px; }
-        .btn-save:hover { background: #00c853; color: #fff; }
-
-        #report { 
-            margin-top: 25px; padding: 15px; background: rgba(124, 77, 255, 0.1); 
-            border-left: 3px solid var(--primary); border-radius: 4px; font-size: 13px; 
-            line-height: 1.6; display: none; animation: fadeIn 1s;
-        }
-
-        canvas { flex-grow: 1; cursor: crosshair; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body { font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1, h2 { color: #2c3e50; text-align: center; }
+        .question { margin-bottom: 25px; display: none; } /* Скрываем все вопросы по умолчанию */
+        .question.active { display: block; } /* Показываем только текущий */
+        .options { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        button { padding: 12px 20px; cursor: pointer; border: none; border-radius: 5px; background: #3498db; color: white; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #2980b9; }
+        .progress-container { margin: 20px 0; background: #eee; border-radius: 10px; height: 20px; overflow: hidden; }
+        .progress-bar { height: 100%; text-align: center; color: white; font-size: 12px; line-height: 20px; transition: width 0.5s; }
+        .bar-m { background: #3498db; } /* Маскулинность */
+        .bar-f { background: #e74c3c; } /* Фемининность */
+        .bar-a { background: #9b59b6; } /* Андрогинность */
+        .bar-d { background: #95a5a6; } /* Диффузность */
+        #result { display: none; }
+        .stat-row { margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-    <div id="ui-panel">
-        <h2>Диагностика Поля</h2>
-        
-        <div class="input-group">
-            <label>Имя</label>
-            <input type="text" id="userName" placeholder="Введите имя для цвета...">
+    <h1>Диагностика гендерной идентичности</h1>
+    
+    <div id="quiz-container" class="card">
+        <div id="questions-wrapper">
+            </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <small id="counter">Вопрос 1 из 20</small>
         </div>
-        <div class="input-group">
-            <label>Дата рождения</label>
-            <input type="date" id="birthDate">
-        </div>
-        
-        <hr style="border: 0; border-top: 1px solid #333; margin: 10px 0 20px 0;">
-        
-        <div class="input-group"><label>Энергия</label><input type="range" id="q1" min="1" max="10" value="7"></div>
-        <div class="input-group"><label>Спокойствие</label><input type="range" id="q2" min="1" max="10" value="5"></div>
-        <div class="input-group"><label>Креатив</label><input type="range" id="q3" min="1" max="10" value="8"></div>
-        <div class="input-group"><label>Сон</label><input type="range" id="q4" min="1" max="10" value="6"></div>
-
-        <button class="btn-analys" onclick="startDiagnostic()">Запустить Вспышку</button>
-        <button class="btn-save" onclick="saveCertificate()">Скачать PNG</button>
-
-        <div id="report"></div>
     </div>
 
-    <canvas id="auraCanvas"></canvas>
+    <div id="result" class="card">
+        <h2>Ваш психологический профиль</h2>
+        
+        <div class="stat-row">
+            <label>Маскулинность (Агентность): <span id="val-m">0</span>%</label>
+            <div class="progress-container"><div id="bar-m" class="progress-bar bar-m" style="width: 0%"></div></div>
+        </div>
+        
+        <div class="stat-row">
+            <label>Фемининность (Общинность): <span id="val-f">0</span>%</label>
+            <div class="progress-container"><div id="bar-f" class="progress-bar bar-f" style="width: 0%"></div></div>
+        </div>
+
+        <div class="stat-row">
+            <label>Андрогинность (Интеграция): <span id="val-a">0</span>%</label>
+            <div class="progress-container"><div id="bar-a" class="progress-bar bar-a" style="width: 0%"></div></div>
+        </div>
+
+        <div class="stat-row">
+            <label>Диффузность (Переход): <span id="val-d">0</span>%</label>
+            <div class="progress-container"><div id="bar-d" class="progress-bar bar-d" style="width: 0%"></div></div>
+        </div>
+
+        <hr>
+        <h3>Интерпретация:</h3>
+        <p id="description"></p>
+        <button onclick="location.reload()">Пройти заново</button>
+    </div>
 
 <script>
-    const canvas = document.getElementById('auraCanvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    let animationId;
-    let mouse = { x: -1000, y: -1000 };
-    let config = { color: '#7c4dff', size: 5, speed: 0.01, name: '', date: '', isExploding: false };
+    const questions = [
+        { q: "Когда вы планируете долгосрочный проект, что для вас является приоритетом?", a: "A", b: "B", c: "C", d: "D",
+          text: ["Установление структуры и контроль (Король)", "Атмосфера доверия и сплоченность (Заботливый)", "Инновации и трансформация идеи (Маг)", "Ожидание внешней поддержки (Сирота)"] },
+        { q: "Как вы обычно реагируете на несправедливость в ваш адрес?", a: "A", b: "B", c: "C", d: "D",
+          text: ["Защищаю границы решительно (Воин)", "Ищу компромисс и мотивы (Простодушный)", "Вижу возможность для роста (Мудрец)", "Чувствую себя жертвой (Сирота)"] },
+        { q: "Ваше отношение к проявлению эмоций на публике:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Самоконтроль — признак силы", "Открыто выражаю теплоту", "Инструмент влияния на атмосферу", "Не могу совладать с чувствами"] },
+        { q: "Какая роль в отношениях с партнером вам ближе?", a: "A", b: "B", c: "C", d: "D",
+          text: ["Быть опорой и защитником", "Быть источником нежности", "Равноправное исследование смыслов", "Быть тем, о ком заботятся"] },
+        { q: "Что вы считаете своим главным достижением в жизни?", a: "A", b: "B", c: "C", d: "D",
+          text: ["Карьерный рост и статус", "Крепкая семья и друзья", "Внутренняя мудрость", "Выживание и адаптация"] },
+        { q: "Как вы ведете себя в новой обстановке?", a: "A", b: "B", c: "C", d: "D",
+          text: ["Активные действия для авторитета", "Миролюбие для поиска союзников", "Наблюдение и анализ правил", "Тревога и ожидание инициативы других"] },
+        { q: "Ваша реакция на успех другого человека:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Мотивация превзойти результат", "Искренняя радость и поддержка", "Изучение опыта как кейса", "Зависть или неполноценность"] },
+        { q: "Какое утверждение о силе вам ближе?", a: "A", b: "B", c: "C", d: "D",
+          text: ["Сила — подчинение обстоятельств воле", "Сила — способность прощать", "Сила — знание, когда действовать", "У меня нет силы, я подстраиваюсь"] },
+        { q: "Принятие решений в ситуации неопределенности:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Риск и быстрая логика", "Советы с теми, кому доверяю", "Интуитивное озарение", "Ступор или хаос"] },
+        { q: "Что для вас означает «забота»?", a: "A", b: "B", c: "C", d: "D",
+          text: ["Обеспечение безопасности и защиты", "Эмоциональная близость и нежность", "Помощь в самопознании", "Самопожертвование во вред себе"] },
+        { q: "В конфликтной ситуации вы склонны:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Настаивать на своем до победного", "Искать мирное решение", "Перевести в плоскость смыслов", "Уходить от разговора"] },
+        { q: "Каким должен быть идеальный руководитель?", a: "A", b: "B", c: "C", d: "D",
+          text: ["Решительный лидер", "Мудрый наставник", "Стратег-трансформатор", "Тот, кто не мешает"] },
+        { q: "Отношение к конкуренции:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Драйвер роста и побед", "Разрушение отношений", "Способ улучшить систему", "Избегание из-за страха проигрыша"] },
+        { q: "Главный источник вдохновения:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Преодоление трудностей", "Красота и любовь", "Тайны мироздания", "Мечты о будущем"] },
+        { q: "Реакция на незаслуженную критику:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Жесткое пресечение обесценивания", "Попытка оправдаться", "Проекция проблем критика", "Сомнения в себе"] },
+        { q: "Идеальная стратегия сложных задач:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Методичное выполнение этапов", "Поиск единомышленников", "Нестандартный «магический» способ", "Откладывание на потом"] },
+        { q: "Что значит «быть собой»?", a: "A", b: "B", c: "C", d: "D",
+          text: ["Делать свое вопреки мнению толпы", "Следовать зову сердца", "Осознавать и менять роли", "Соответствовать ожиданиям других"] },
+        { q: "Отношение к переменам:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Люблю движение вперед", "Опасаюсь за стабильность", "Закон трансформации вселенной", "Чувствую беззащитность"] },
+        { q: "Ваше отношение к лидерству:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Власть и контроль", "Служение и забота", "Трансформация сознания", "Тяжелая ноша"] },
+        { q: "Смысл человеческого существования:", a: "A", b: "B", c: "C", d: "D",
+          text: ["Достижения и след в истории", "Любовь и радость общения", "Познание истины", "Поиск счастья и избегание боли"] }
+    ];
 
-    // Обработка мыши
-    canvas.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        mouse.x = e.clientX - rect.left;
-        mouse.y = e.clientY - rect.top;
-    });
+    let currentStep = 0;
+    let scores = { A: 0, B: 0, C: 0, D: 0 };
 
-    function resize() {
-        canvas.width = window.innerWidth - 350;
-        canvas.height = window.innerHeight;
-    }
-    window.onresize = resize;
-    resize();
-
-    class Particle {
-        constructor(isBurst = false) {
-            this.reset(isBurst);
-        }
-        reset(isBurst) {
-            this.angle = Math.random() * Math.PI * 2;
-            this.dist = isBurst ? 2 : Math.random() * (config.size * 20) + 50;
-            
-            // Если вспышка, задаем огромную скорость разлета из центра
-            this.velX = isBurst ? (Math.random() - 0.5) * 50 : 0;
-            this.velY = isBurst ? (Math.random() - 0.5) * 50 : 0;
-            
-            this.x = canvas.width / 2;
-            this.y = canvas.height / 2;
-            this.size = Math.random() * 2 + 1;
-            this.orbitSpeed = (Math.random() * 0.02 + 0.005) * (config.speed * 5);
-            this.alpha = Math.random();
-            this.friction = 0.95; // Сопротивление для затухания взрыва
-        }
-
-        update() {
-            if (Math.abs(this.velX) > 0.1 || Math.abs(this.velY) > 0.1) {
-                // Логика взрыва (свободное движение с торможением)
-                this.x += this.velX;
-                this.y += this.velY;
-                this.velX *= this.friction;
-                this.velY *= this.friction;
-            } else {
-                // Логика возвращения в орбиту
-                this.angle += this.orbitSpeed;
-                let targetX = canvas.width / 2 + Math.cos(this.angle) * this.dist;
-                let targetY = canvas.height / 2 + Math.sin(this.angle) * this.dist;
-
-                // Взаимодействие с мышью
-                let dx = mouse.x - targetX;
-                let dy = mouse.y - targetY;
-                let distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < 150) {
-                    let force = (150 - distance) / 150;
-                    targetX += dx * force * 0.5;
-                    targetY += dy * force * 0.5;
-                }
-
-                // Плавное следование к своей точке орбиты
-                this.x += (targetX - this.x) * 0.05;
-                this.y += (targetY - this.y) * 0.05;
-            }
-        }
-
-        draw() {
-            ctx.fillStyle = config.color;
-            ctx.globalAlpha = this.alpha;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    function stringToHex(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        let c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
-        return "#" + "00000".substring(0, 6 - c.length) + c;
-    }
-
-    function startDiagnostic() {
-        if(animationId) cancelAnimationFrame(animationId);
-        
-        const name = document.getElementById('userName').value || "Душа";
-        config.name = name;
-        config.date = new Date().toLocaleDateString();
-        config.color = stringToHex(name);
-        
-        const qSum = [1,2,3,4].reduce((acc, n) => acc + parseInt(document.getElementById('q'+n).value), 0);
-        config.size = qSum;
-        config.speed = qSum / 40;
-
-        // Отчет
-        const report = document.getElementById('report');
-        report.style.display = 'block';
-        report.innerHTML = `<strong>Анализ завершен:</strong><br>Цвет "${config.color}" указывает на уникальный резонанс. Индекс активности: ${qSum * 2.5}%.`;
-
-        // Создаем частицы для эффекта вспышки
-        particles = [];
-        for(let i = 0; i < 600; i++) {
-            particles.push(new Particle(true));
-        }
-        
-        animate();
-    }
-
-    function animate() {
-        ctx.fillStyle = 'rgba(5, 5, 5, 0.2)'; // Хвосты за частицами
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        particles.forEach(p => {
-            p.update();
-            p.draw();
+    function init() {
+        const wrapper = document.getElementById('questions-wrapper');
+        questions.forEach((q, index) => {
+            const div = document.createElement('div');
+            div.className = `question ${index === 0 ? 'active' : ''}`;
+            div.id = `q-${index}`;
+            div.innerHTML = `
+                <h3>${index + 1}. ${q.q}</h3>
+                <div class="options">
+                    <button onclick="next('${q.a}')">${q.text[0]}</button>
+                    <button onclick="next('${q.b}')">${q.text[1]}</button>
+                    <button onclick="next('${q.c}')">${q.text[2]}</button>
+                    <button onclick="next('${q.d}')">${q.text[3]}</button>
+                </div>
+            `;
+            wrapper.appendChild(div);
         });
-
-        animationId = requestAnimationFrame(animate);
     }
 
-    function saveCertificate() {
-        // Рендерим чистый кадр для сохранения
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
-        const tCtx = tempCanvas.getContext('2d');
-
-        tCtx.fillStyle = "#050505";
-        tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-        // Переносим частицы
-        particles.forEach(p => {
-            tCtx.fillStyle = config.color;
-            tCtx.globalAlpha = p.alpha;
-            tCtx.beginPath();
-            tCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            tCtx.fill();
-        });
-
-        // Текст сертификата
-        tCtx.globalAlpha = 1;
-        tCtx.fillStyle = "#fff";
-        tCtx.font = "bold 28px sans-serif";
-        tCtx.fillText("ENERGY ANALYSIS", 40, 60);
+    function next(answer) {
+        scores[answer]++;
+        document.getElementById(`q-${currentStep}`).classList.remove('active');
+        currentStep++;
         
-        tCtx.font = "14px monospace";
-        tCtx.fillStyle = config.color;
-        tCtx.fillText(`SUBJECT: ${config.name.toUpperCase()}`, 40, 100);
-        tCtx.fillStyle = "#666";
-        tCtx.fillText(`DATE: ${config.date} | VIBRATION: ${config.size * 2}`, 40, 125);
-
-        const link = document.createElement('a');
-        link.download = `Aura_${config.name}.png`;
-        link.href = tempCanvas.toDataURL();
-        link.click();
+        if (currentStep < questions.length) {
+            document.getElementById(`q-${currentStep}`).classList.add('active');
+            document.getElementById('counter').innerText = `Вопрос ${currentStep + 1} из 20`;
+        } else {
+            showResult();
+        }
     }
+
+    function showResult() {
+        document.getElementById('quiz-container').style.display = 'none';
+        document.getElementById('result').style.display = 'block';
+
+        const total = questions.length;
+        const pM = (scores.A / total) * 100;
+        const pF = (scores.B / total) * 100;
+        const pA = (scores.C / total) * 100;
+        const pD = (scores.D / total) * 100;
+
+        document.getElementById('val-m').innerText = pM.toFixed(0);
+        document.getElementById('val-f').innerText = pF.toFixed(0);
+        document.getElementById('val-a').innerText = pA.toFixed(0);
+        document.getElementById('val-d').innerText = pD.toFixed(0);
+
+        document.getElementById('bar-m').style.width = pM + '%';
+        document.getElementById('bar-f').style.width = pF + '%';
+        document.getElementById('bar-a').style.width = pA + '%';
+        document.getElementById('bar-d').style.width = pD + '%';
+
+        let desc = "";
+        if (scores.A > 10) desc = "<b>Маскулинный тип:</b> Вы ориентированы на достижение целей, структуру и защиту границ. Сильные стороны — решительность и надежность. Совет: развивайте эмпатию[cite: 371, 376].";
+        else if (scores.B > 10) desc = "<b>Фемининный тип:</b> Для вас важна гармония, чувства и связь с людьми. Вы обладаете высоким эмоциональным интеллектом. Совет: укрепляйте личные границы[cite: 371, 381].";
+        else if (scores.C > 10) desc = "<b>Андрогинный тип:</b> Поздравляем! Вы достигли высокого уровня психологической гибкости, сочетая в себе лучшее от обоих начал[cite: 371, 386].";
+        else if (scores.D > 10) desc = "<b>Кризис идентичности:</b> Сейчас вы находитесь в точке трансформации. Это время поиска новых опор и работы с внутренними тенями[cite: 371, 391].";
+        else desc = "<b>Смешанный профиль:</b> У вас наблюдается баланс нескольких стратегий. Вы склонны адаптироваться к ситуации, используя разные грани своей личности[cite: 373].";
+
+        document.getElementById('description').innerHTML = desc + "<br><br><i>Расчет произведен на основе синтеза теории гендерных схем С. Бем и архетипической психологии К. Юнга.</i>";
+    }
+
+    init();
 </script>
 </body>
 </html>

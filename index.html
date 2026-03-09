@@ -2,94 +2,23 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Identity Insight: BSRI</title>
+    <title>Identity Insight: Трансформация</title>
     <style>
-        :root { 
-            --bg: #F5F5F7; 
-            --text: #1D1D1F; 
-            --accent: #0071E3; 
-            --card: #FFFFFF; 
-            --progress-bg: #E5E5EA;
-        }
-        
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            padding: 60px 20px; 
-            display: flex; 
-            justify-content: center; 
-            margin: 0;
-            transition: background-color 0.8s ease; /* Плавная смена цвета фона */
-        }
-
-        .container { max-width: 500px; width: 100%; }
-        
-        .card { 
-            background: var(--card); 
-            padding: 40px; 
-            border-radius: 28px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.07); 
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .progress-container {
-            width: 100%;
-            height: 4px;
-            background: var(--progress-bg);
-            border-radius: 2px;
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        
-        #progress-fill {
-            height: 100%;
-            width: 0%;
-            background: var(--accent);
-            transition: width 0.3s ease;
-        }
-
-        .question-text { 
-            font-size: 26px; 
-            font-weight: 600; 
-            margin-bottom: 40px; 
-            min-height: 100px; 
-            line-height: 1.3; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
+        :root { --bg: #F5F5F7; --text: #1D1D1F; --accent: #0071E3; --card: #FFFFFF; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 40px 20px; display: flex; justify-content: center; margin: 0; transition: background-color 0.8s ease; }
+        .container { max-width: 550px; width: 100%; }
+        .card { background: var(--card); padding: 40px; border-radius: 28px; box-shadow: 0 15px 35px rgba(0,0,0,0.07); text-align: center; }
+        .progress-bar { width: 100%; height: 6px; background: #E5E5EA; border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+        #fill { height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease; }
+        .question-text { font-size: 26px; font-weight: 600; margin: 30px 0; min-height: 100px; display: flex; align-items: center; justify-content: center; }
         .btn-group { display: flex; gap: 15px; justify-content: center; }
-        
-        button { 
-            padding: 18px 45px; 
-            border-radius: 980px; 
-            border: none; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
-            font-size: 17px; 
-        }
-
+        button { padding: 18px 45px; border-radius: 980px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 17px; }
         .yes { background: var(--accent); color: white; }
         .no { background: #E5E5EA; color: #3A3A3C; }
-        
-        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        button:active { transform: scale(0.96); }
-
+        .analysis-box { text-align: left; background: rgba(0,0,0,0.03); padding: 25px; border-radius: 18px; margin-top: 20px; font-size: 15px; line-height: 1.6; border-left: 4px solid var(--accent); }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
         .hidden { display: none; }
-        
-        .analysis-box { 
-            text-align: left; 
-            background: rgba(0,0,0,0.03); 
-            padding: 25px; 
-            border-radius: 18px; 
-            margin-top: 20px; 
-            font-size: 15px; 
-            line-height: 1.6; 
-        }
     </style>
 </head>
 <body>
@@ -97,27 +26,24 @@
 <div class="container">
     <div class="card" id="start">
         <h1>Identity Insight</h1>
-        <p style="color:#86868B; margin-bottom: 30px;">Выберите ваш пол для настройки интерфейса и калибровки профиля:</p>
-        <button class="yes" style="background:#0071E3;" onclick="startQuiz('male')">Мужчина</button>
+        <p>Выберите ваш пол для калибровки рекомендаций:</p>
+        <button class="yes" onclick="startQuiz('male')">Мужчина</button>
         <button class="yes" style="background:#FF3B30;" onclick="startQuiz('female')">Женщина</button>
     </div>
 
     <div class="card hidden" id="quiz">
-        <div class="progress-container">
-            <div id="progress-fill"></div>
-        </div>
-        <div style="font-size: 12px; color: #86868B; margin-bottom: 10px;" id="counter">Вопрос 1 из 60</div>
-        <div id="q-text" class="question-text">Загрузка...</div>
+        <div class="progress-bar"><div id="fill"></div></div>
+        <div id="q-text" class="question-text"></div>
         <div class="btn-group">
             <button class="no" onclick="answer(0)">Нет</button>
             <button class="yes" id="main-yes" onclick="answer(1)">Да</button>
         </div>
     </div>
 
-    <div id="result" class="card hidden">
-        <h1>Ваш отчет</h1>
+    <div class="card hidden" id="result">
+        <h1>Ваш психологический разбор</h1>
         <div id="report-text"></div>
-        <button class="yes" id="reset-btn" style="width:100%; margin-top:30px;" onclick="location.reload()">Пройти заново</button>
+        <button class="yes" id="reset-btn" style="width:100%; margin-top:30px;" onclick="location.reload()">Начать заново</button>
     </div>
 </div>
 
@@ -146,30 +72,26 @@
     ];
 
     let current = 0, mScore = 0, fScore = 0, nScore = 0, userGender = "";
+    let missedM = [], missedF = [];
 
     function startQuiz(gender) {
         userGender = gender;
-        
-        // Настройка цветов в зависимости от гендера
         if (gender === 'male') {
-            document.documentElement.style.setProperty('--bg', '#F0F4F8'); // Серо-голубой
+            document.documentElement.style.setProperty('--bg', '#F0F4F8');
             document.documentElement.style.setProperty('--accent', '#0071E3');
         } else {
-            document.documentElement.style.setProperty('--bg', '#FFF0F5'); // Розовый лаванда
+            document.documentElement.style.setProperty('--bg', '#FFF0F5');
             document.documentElement.style.setProperty('--accent', '#FF3B30');
             document.getElementById('main-yes').style.background = '#FF3B30';
-            document.getElementById('reset-btn').style.background = '#FF3B30';
         }
-
         document.getElementById('start').classList.add('hidden');
         document.getElementById('quiz').classList.remove('hidden');
         showQ();
     }
 
     function showQ() {
-        document.getElementById('counter').innerText = `Вопрос ${current + 1} из 60`;
         document.getElementById('q-text').innerText = items[current].t;
-        document.getElementById('progress-fill').style.width = `${((current + 1) / 60) * 100}%`;
+        document.getElementById('fill').style.width = `${((current + 1) / 60) * 100}%`;
     }
 
     function answer(val) {
@@ -177,13 +99,13 @@
             if(items[current].type === 'M') mScore++;
             if(items[current].type === 'F') fScore++;
             if(items[current].type === 'N') nScore++;
+        } else {
+            if(items[current].type === 'M') missedM.push(items[current].t);
+            if(items[current].type === 'F') missedF.push(items[current].t);
         }
         current++;
-        if(current < items.length) {
-            showQ();
-        } else {
-            finish();
-        }
+        if(current < items.length) showQ();
+        else finish();
     }
 
     function finish() {
@@ -194,26 +116,40 @@
         let advice = "";
 
         if (mScore >= 12 && fScore >= 12) {
-            matrix = "Андрогинный тип";
-            advice = "Вы обладаете высокой психологической пластичностью. Вы эффективно используете как мужские, так и женские стратегии поведения в зависимости от ситуации.";
-        } else if (mScore > fScore) {
-            matrix = "Маскулинный тип";
-            advice = "Ваша идентичность сильно связана с инструментальными чертами. Рекомендуется развивать навыки эмоционального интеллекта для баланса.";
-        } else if (fScore > mScore) {
-            matrix = "Фемининный тип";
-            advice = "Вы ориентированы на экспрессивность и отношения. Рекомендуется практиковать автономность и решительность для укрепления личных границ.";
+            matrix = "Андрогинный тип (Гармония)";
+            advice = "<p>Вы успешно интегрировали в себе оба полюса. Вы умеете быть решительным и эмпатичным одновременно.</p>";
+        } else if (userGender === 'male' && fScore > mScore) {
+            matrix = "Фемининный профиль (у мужчины)";
+            advice = `<div class="analysis-box">
+                <strong>Рекомендация по усилению мужских качеств:</strong><br>
+                Ваша мягкость — это сила, но для баланса вам стоит осознанно внедрять в жизнь следующие дефицитарные для вас качества:
+                <ul>
+                    <li><strong>${missedM[0] || 'Решительность'}:</strong> Начните брать на себя ответственность в бытовых спорах.</li>
+                    <li><strong>${missedM[1] || 'Склонность к риску'}:</strong> Пробуйте новое, не боясь ошибиться.</li>
+                    <li><strong>${missedM[2] || 'Настойчивость'}:</strong> Не отступайте, если считаете себя правым.</li>
+                </ul>
+            </div>`;
+        } else if (userGender === 'female' && mScore > fScore) {
+            matrix = "Маскулинный профиль (у женщины)";
+            advice = `<div class="analysis-box">
+                <strong>Рекомендация по интеграции женских качеств:</strong><br>
+                Ваша решительность помогает в карьере, но для внутренней гармонии попробуйте разблокировать:
+                <ul>
+                    <li><strong>${missedF[0] || 'Эмпатия'}:</strong> Учитесь просто слушать, не предлагая сразу решение проблемы.</li>
+                    <li><strong>${missedF[1] || 'Мягкость'}:</strong> Позвольте себе проявлять уязвимость в близком кругу.</li>
+                    <li><strong>${missedF[2] || 'Миролюбие'}:</strong> Ищите компромисс там, где привыкли подавлять.</li>
+                </ul>
+            </div>`;
         } else {
-            matrix = "Недифференцированный тип";
-            advice = "Ваши гендерные паттерны выражены слабо. Это может быть периодом трансформации или специфическим стилем адаптации.";
+            matrix = mScore > fScore ? "Маскулинный тип" : "Фемининный тип";
+            advice = `<p>Ваш вектор развития — постепенная интеграция качеств противоположного полюса для достижения андрогинности.</p>`;
         }
 
         document.getElementById('report-text').innerHTML = `
-            <div style="font-size:20px; margin-bottom:10px;">Профиль: <strong>${matrix}</strong></div>
-            <div style="color:#86868B; margin-bottom:20px;">М: ${mScore} | Ж: ${fScore} | Нейтральность: ${nScore}</div>
-            <div class="analysis-box">
-                <strong>Интерпретация:</strong><br>${advice}<br><br>
-                Показатель нейтральности (андрогинности) ${nScore}/20 указывает на вашу общую социальную приспособляемость независимо от гендерных ролей.
-            </div>`;
+            <h3>${matrix}</h3>
+            <p>Баллы: Мужские ${mScore} | Женские ${fScore} | Нейтральные ${nScore}</p>
+            ${advice}
+        `;
     }
 </script>
 </body>

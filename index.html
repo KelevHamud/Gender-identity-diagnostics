@@ -2,33 +2,47 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Психодиагностический комплекс BSRI</title>
+    <title>BSRI: Анализ гендерных паттернов</title>
     <style>
-        :root { --bg: #F5F5F7; --text: #1D1D1F; --accent: #0071E3; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); padding: 40px; display: flex; justify-content: center; }
-        .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 600px; width: 100%; }
-        .trait { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        input[type="number"] { width: 50px; padding: 5px; border: 1px solid #ccc; border-radius: 5px; }
-        button { background: var(--accent); color: white; border: none; padding: 15px 30px; border-radius: 980px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 20px; }
+        :root { --bg: #F5F5F7; --text: #1D1D1F; --accent: #0071E3; --card: #FFFFFF; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 40px 20px; display: flex; justify-content: center; }
+        .container { max-width: 600px; width: 100%; }
+        .card { background: var(--card); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        h1 { font-size: 26px; text-align: center; margin-bottom: 20px; }
+        .q-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #E5E5EA; }
+        .btn-group { display: flex; gap: 8px; }
+        button { border: none; padding: 8px 18px; border-radius: 980px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .btn-no { background: #E5E5EA; }
+        .btn-yes { background: var(--accent); color: white; }
+        .selected { background: #1D1D1F !important; color: white; }
+        .submit-btn { width: 100%; padding: 16px; background: var(--accent); color: white; border-radius: 12px; margin-top: 30px; font-weight: 600; font-size: 16px; }
+        #results { display: none; }
     </style>
 </head>
 <body>
 
-<div class="card" id="test-body">
-    <h1>Опросник гендерных ролей (BSRI)</h1>
-    <p>Оцените по шкале от 1 до 7, насколько каждое качество характерно для вас (1 — никогда, 7 — всегда).</p>
-    <div id="items-list"></div>
-    <button onclick="calculateBSRI()">Анализировать профиль</button>
-</div>
+<div class="container">
+    <div class="card" id="gender-selection">
+        <h1>BSRI: Психодиагностика</h1>
+        <p style="text-align:center; color:#86868B;">Выберите пол для корректной интерпретации нормативов согласно методике Бем:</p>
+        <button class="submit-btn" onclick="setGender('male')">Мужской профиль</button>
+        <button class="submit-btn" style="background:#E53935;" onclick="setGender('female')">Женский профиль</button>
+    </div>
 
-<div class="card" id="results" style="display:none;">
-    <h1>Отчет по результатам</h1>
-    <div id="output"></div>
-    <button onclick="location.reload()">Сбросить данные</button>
+    <div class="card" id="quiz-area" style="display:none;">
+        <div id="questions"></div>
+        <button class="submit-btn" onclick="calculate()">Завершить анализ</button>
+    </div>
+
+    <div class="card" id="results">
+        <h1>Ваш отчет</h1>
+        <div id="report-text"></div>
+        <button class="submit-btn" onclick="location.reload()">Пройти заново</button>
+    </div>
 </div>
 
 <script>
-    const bsrItems = [
+    const items = [
         {t: "Самостоятельный", type: "M"}, {t: "Ласковый", type: "F"}, {t: "Аккуратный", type: "N"},
         {t: "Амбициозный", type: "M"}, {t: "Чувствительный", type: "F"}, {t: "Надежный", type: "N"},
         {t: "Аналитичный", type: "M"}, {t: "Заботливый", type: "F"}, {t: "Веселый", type: "N"},
@@ -50,37 +64,51 @@
         {t: "Индивидуалист", type: "M"}, {t: "Домашний", type: "F"}, {t: "Упрямый", type: "N"}
     ];
 
-    const list = document.getElementById('items-list');
-    bsrItems.forEach((item, i) => {
-        list.innerHTML += `<div class="trait"><span>${item.t}</span><input type="number" min="1" max="7" value="4" id="r${i}"></div>`;
-    });
+    let userGender = "";
+    let responses = new Array(60).fill(null);
 
-    function calculateBSRI() {
-        let m = 0, f = 0;
-        bsrItems.forEach((item, i) => {
-            let val = parseInt(document.getElementById('r'+i).value);
-            if(item.type === "M") m += val;
-            if(item.type === "F") f += val;
+    function setGender(g) {
+        userGender = g;
+        document.getElementById('gender-selection').style.display = 'none';
+        document.getElementById('quiz-area').style.display = 'block';
+        const qContainer = document.getElementById('questions');
+        items.forEach((item, i) => {
+            qContainer.innerHTML += `<div class="q-row"><span>${item.t}</span><div class="btn-group"><button class="btn-no" onclick="select(${i}, 0, this)">Нет</button><button class="btn-yes" onclick="select(${i}, 1, this)">Да</button></div></div>`;
         });
-        m /= 20; f /= 20;
-
-        // Расчет андрогинности по формуле t-критерия (упрощенно для веба)
-        let report = `<h2>Ваш гендерный профиль</h2>
-            <p>Индекс маскулинности: <b>${m.toFixed(2)}</b> (Инструментальность)</p>
-            <p>Индекс фемининности: <b>${f.toFixed(2)}</b> (Экспрессивность)</p>
-            <h3>Аналитический отчет:</h3>
-            <p>${generateInterpretation(m, f)}</p>`;
-        
-        document.getElementById('test-body').style.display = 'none';
-        document.getElementById('results').style.display = 'block';
-        document.getElementById('output').innerHTML = report;
     }
 
-    function generateInterpretation(m, f) {
-        if (m > 4.9 && f > 4.9) return "Вы обладаете <b>андрогинным профилем</b>. Это состояние психологической интеграции, при котором личность свободна от жестких гендерных стереотипов. Вы эффективно сочетаете агентность (действие) и общинность (чувства). Это позволяет вам адаптироваться к любым социальным вызовам, выбирая наиболее подходящую стратегию поведения, а не ту, что «предписана» биологическим полом.";
-        if (m > f) return "Ваш профиль демонстрирует <b>выраженную маскулинную ориентацию</b>. Вы опираетесь на инструментальные стратегии: контроль, логику, достижение целей и автономию. Ваша «Тень» — это подавление экспрессивных аспектов (эмпатии, мягкости), которые могут быть необходимы для глубокой межличностной коммуникации.";
-        if (f > m) return "Ваш профиль демонстрирует <b>выраженную фемининную ориентацию</b>. Вы опираетесь на экспрессивные стратегии: заботу, эмпатию, эмоциональную связь и создание гармонии. Ваша «Тень» — это потенциальная нехватка жесткости в отстаивании границ, что может приводить к самопожертвованию во вред собственным амбициям.";
-        return "Ваш профиль характеризуется как <b>низкодифференцированный</b>. Это может свидетельствовать о переходном этапе идентичности, когда старые способы адаптации ослабли, а новые еще не сформированы. Рекомендуется обратить внимание на развитие обеих сторон — как личных амбиций, так и навыков эмоциональной близости.";
+    function select(idx, val, btn) {
+        responses[idx] = val;
+        btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
+
+    function calculate() {
+        let m = 0, f = 0;
+        responses.forEach((res, i) => {
+            if(res === 1) {
+                if(items[i].type === 'M') m++;
+                if(items[i].type === 'F') f++;
+            }
+        });
+
+        // Классификация Бем (используем порог 10 как точку отсчета для 20 пунктов)
+        let matrix = "";
+        if (m > 10 && f > 10) matrix = "Андрогинный тип";
+        else if (m > 10 && f <= 10) matrix = "Маскулинный тип";
+        else if (f > 10 && m <= 10) matrix = "Фемининный тип";
+        else matrix = "Недифференцированный тип";
+
+        document.getElementById('quiz-area').style.display = 'none';
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('report-text').innerHTML = `
+            <p>Результаты профиля:</p>
+            <ul><li>Маскулинность (M): ${m}/20</li><li>Фемининность (F): ${f}/20</li></ul>
+            <p><strong>Ваш тип: ${matrix}</strong></p>
+            <p>Аналитическая мета-структура вашей идентичности в текущем периоде опирается на 
+            ${m > f ? 'инструментальные стратегии (достижения, контроль)' : 'экспрессивные стратегии (гармонизация, эмпатия)'}.</p>
+            <p>Согласно Сандре Бем, андрогинность не является средним значением, это <b>высокая выраженность обоих векторов</b>. Если ваш результат ниже порога по одной из шкал, это не дефицит, а указание на текущий доминирующий вектор адаптации. Для расширения личности рекомендуется осознанная активация качеств из «проседающего» сектора.</p>
+        `;
     }
 </script>
 </body>

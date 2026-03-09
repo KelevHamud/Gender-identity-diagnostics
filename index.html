@@ -2,15 +2,15 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>BSRI: Глубокая психодиагностика</title>
+    <title>BSRI: Психодиагностика</title>
     <style>
         :root { --bg: #F5F5F7; --text: #1D1D1F; --accent: #0071E3; --card: #FFFFFF; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 60px 20px; display: flex; justify-content: center; margin: 0; transition: background-color 0.6s ease; }
         .container { max-width: 500px; width: 100%; }
         .card { background: var(--card); padding: 40px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); text-align: center; }
         .question-text { font-size: 26px; font-weight: 600; margin: 40px 0; min-height: 100px; }
-        button { padding: 18px 45px; border-radius: 980px; border: none; font-weight: 600; cursor: pointer; margin: 5px; font-size: 17px; }
-        .yes { background: var(--accent); color: white; }
+        button { padding: 18px 45px; border-radius: 980px; border: none; font-weight: 600; cursor: pointer; margin: 5px; font-size: 17px; transition: 0.3s; }
+        .main-btn { background: var(--accent); color: white; }
         .no { background: #E5E5EA; color: #3A3A3C; }
         .analysis-box { text-align: left; background: rgba(0,0,0,0.03); padding: 25px; border-radius: 20px; margin-top: 20px; line-height: 1.7; }
     </style>
@@ -21,21 +21,21 @@
     <div class="card" id="start">
         <h1>BSRI Psychometrics</h1>
         <p>Выберите пол для калибровки нормативной модели:</p>
-        <button class="yes" onclick="startQuiz('male')">Мужчина</button>
-        <button class="yes" style="background:#D81B60;" onclick="startQuiz('female')">Женщина</button>
+        <button id="btn-m" class="main-btn" style="background:#0071E3;" onclick="startQuiz('male')">Мужчина</button>
+        <button id="btn-f" class="main-btn" style="background:#D81B60;" onclick="startQuiz('female')">Женщина</button>
     </div>
 
     <div class="card hidden" id="quiz">
         <div id="q-text" class="question-text"></div>
         <div id="buttons">
             <button class="no" onclick="answer(0)">Нет</button>
-            <button class="yes" onclick="answer(1)">Да</button>
+            <button class="main-btn" onclick="answer(1)">Да</button>
         </div>
     </div>
 
     <div class="card hidden" id="result">
         <div id="report-text" style="text-align: left;"></div>
-        <button class="yes" style="width:100%; margin-top:30px;" onclick="location.reload()">Начать заново</button>
+        <button class="main-btn" style="width:100%; margin-top:30px;" onclick="location.reload()">Начать заново</button>
     </div>
 </div>
 
@@ -65,27 +65,17 @@
 
     let current = 0, mScore = 0, fScore = 0, nScore = 0, userGender = "";
 
-  function startQuiz(gender) {
+    function startQuiz(gender) {
         userGender = gender;
-        
-        // Установка цветов фона и основного акцента
         const root = document.documentElement;
+        // Применяем цветовую схему ко всему интерфейсу
         if (gender === 'male') {
             root.style.setProperty('--bg', '#E0E8F0');
             root.style.setProperty('--accent', '#0071E3');
-            // Принудительно красим кнопку "Женщина" в синий (если бы она осталась видна)
-            document.querySelectorAll('button').forEach(btn => {
-                if(btn.innerText === "Женщина") btn.style.background = '#0071E3';
-            });
         } else {
             root.style.setProperty('--bg', '#FCE4EC');
             root.style.setProperty('--accent', '#D81B60');
-            // Принудительно красим кнопку "Мужчина" в розовый/малиновый
-            document.querySelectorAll('button').forEach(btn => {
-                if(btn.innerText === "Мужчина") btn.style.background = '#D81B60';
-            });
         }
-
         document.getElementById('start').classList.add('hidden');
         document.getElementById('quiz').classList.remove('hidden');
         showQ();
@@ -106,30 +96,19 @@
     function finish() {
         document.getElementById('quiz').classList.add('hidden');
         document.getElementById('result').classList.remove('hidden');
-        
-        let report = `
+        document.getElementById('report-text').innerHTML = `
             <h2 style="text-align:center">Аналитический отчет</h2>
             <div class="analysis-box">
-                <strong>Количественный профиль:</strong><br>
-                Маскулинность (M): ${mScore}/20<br>
-                Фемининность (F): ${fScore}/20<br>
-                Андрогинность (A): ${nScore}/20
+                Маскулинность: ${mScore}/20 | Фемининность: ${fScore}/20 | Андрогинность: ${nScore}/20
             </div>
-            <div class="analysis-box">
-                <strong>Психологическая интерпретация:</strong><br>
-                ${generateDeepAnalysis()}
-            </div>`;
-        document.getElementById('report-text').innerHTML = report;
+            <div class="analysis-box">${generateDeepAnalysis()}</div>`;
     }
 
     function generateDeepAnalysis() {
-        let text = "";
-        if (mScore >= 12 && fScore >= 12) text = "Ваш результат соответствует <b>Андрогинному типу</b>. В структуре вашей личности гармонично сосуществуют выраженная <b>Маскулинность</b> и высокая <b>Фемининность</b>, что обеспечивает максимальную психологическую адаптивность.";
-        else if (mScore > fScore) text = "Ваш профиль тяготеет к <b>Маскулинному типу</b>. Ваши стратегии адаптации опираются на доминирование качеств <b>Маскулинности</b>. Если дисбаланс велик, ваша <b>Фемининность</b> может быть недостаточно развита, что ограничивает диапазон эмоциональных и эмпатических реакций.";
-        else if (fScore > mScore) text = "Ваш профиль тяготеет к <b>Фемининному типу</b>. В структуре вашей личности доминирует <b>Фемининность</b>. Если дисбаланс велик, ваша <b>Маскулинность</b> (способность к автономному действию и защите границ) может быть недостаточно выражена, что создает риск уступчивости.";
-        else text = "Ваш профиль классифицируется как <b>Недифференцированный</b>. Это указывает на отсутствие выраженной гендерной стратегии адаптации, где и <b>Маскулинность</b>, и <b>Фемининность</b> требуют осознанного развития.";
-        
-        return text;
+        if (mScore >= 12 && fScore >= 12) return "Ваш результат — <b>Андрогинность</b>: в личности гармонично сочетаются Маскулинность и Фемининность.";
+        if (mScore > fScore) return "Ваш профиль — <b>Маскулинность</b>: доминируют стратегии контроля и достижения.";
+        if (fScore > mScore) return "Ваш профиль — <b>Фемининность</b>: доминируют стратегии гармонизации и эмпатии.";
+        return "Ваш профиль — <b>Недифференцированный</b>: требуется осознанное развитие Маскулинности и Фемининности.";
     }
 </script>
 </body>

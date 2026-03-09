@@ -2,86 +2,89 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Гендерный профиль личности</title>
+    <title>Опросник гендерных ролей</title>
     <style>
         :root { --bg: #F5F5F7; --card: #FFFFFF; --accent: #0071E3; --text: #1D1D1F; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 40px 20px; display: flex; justify-content: center; }
         .container { max-width: 600px; width: 100%; }
-        .card { background: var(--card); padding: 40px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        h1 { font-size: 28px; text-align: center; margin-bottom: 20px; }
-        .intro { color: #86868B; text-align: center; margin-bottom: 30px; }
-        button { background: var(--accent); color: white; border: none; padding: 15px 25px; border-radius: 980px; font-weight: 500; cursor: pointer; width: 100%; margin-top: 10px; }
-        .item { margin-bottom: 15px; }
-        select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #D2D2D7; margin-top: 5px; }
-        #result { display: none; }
+        .card { background: var(--card); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        h1 { font-size: 24px; text-align: center; }
+        .question { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #F5F5F7; }
+        button { background: var(--accent); color: white; border: none; padding: 15px 30px; border-radius: 980px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 20px; }
+        .result-text { line-height: 1.6; font-size: 16px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="quiz" class="card">
-        <h1>Анализ гендерных характеристик</h1>
-        <p class="intro">Этот тест помогает определить степень выраженности маскулинных и фемининных качеств в вашем характере. Оцените, насколько каждое из качеств описывает вас.</p>
-        <div id="questions"></div>
-        <button onclick="calculate()">Узнать результат</button>
+    <div class="card">
+        <h1>Опросник гендерных ролей (BSRI)</h1>
+        <p style="text-align:center; color:#86868B;">Отметьте «Да», если качество описывает вас, или «Нет», если нет.</p>
+        <div id="quiz"></div>
+        <button onclick="calculate()">Завершить и получить отчет</button>
     </div>
 
-    <div id="result" class="card">
-        <h1>Ваш профиль</h1>
-        <div id="report"></div>
+    <div id="result" class="card" style="display:none;">
+        <h1>Ваш психологический профиль</h1>
+        <div id="report" class="result-text"></div>
         <button onclick="location.reload()">Пройти заново</button>
     </div>
 </div>
 
 <script>
-    const traits = [
-        { name: "Самостоятельность", type: "M" }, { name: "Заботливость", type: "F" },
-        { name: "Агрессивность", type: "M" }, { name: "Нежность", type: "F" },
-        { name: "Аналитичность", type: "M" }, { name: "Чувствительность", type: "F" },
-        { name: "Лидерские качества", type: "M" }, { name: "Уступчивость", type: "F" },
-        { name: "Решительность", type: "M" }, { name: "Эмпатия", type: "F" },
-        { name: "Соревновательность", type: "M" }, { name: "Склонность к сопереживанию", type: "F" },
-        { name: "Напористость", type: "M" }, { name: "Мягкость", type: "F" },
-        { name: "Сила воли", type: "M" }, { name: "Доброта", type: "F" },
-        { name: "Смелость", type: "M" }, { name: "Искренность", type: "F" },
-        { name: "Независимость", type: "M" }, { name: "Понимание", type: "F" }
+    // Массив из 60 характеристик (M=Маскулинные, F=Фемининные, N=Нейтральные)
+    const items = [
+        { t: "Самостоятельный", type: "M" }, { t: "Ласковый", type: "F" }, { t: "Аккуратный", type: "N" },
+        { t: "Амбициозный", type: "M" }, { t: "Чувствительный", type: "F" }, { t: "Надежный", type: "N" },
+        { t: "Аналитичный", type: "M" }, { t: "Заботливый", type: "F" }, { t: "Веселый", type: "N" },
+        { t: "Напористый", type: "M" }, { t: "Мягкий", type: "F" }, { t: "Скромный", type: "N" },
+        { t: "Конкурентный", type: "M" }, { t: "Эмпатичный", type: "F" }, { t: "Искренний", type: "N" },
+        { t: "Решительный", type: "M" }, { t: "Миролюбивый", type: "F" }, { t: "Пунктуальный", type: "N" },
+        { t: "Доминирующий", type: "M" }, { t: "Нежный", type: "F" }, { t: "Сдержанный", type: "N" },
+        { t: "Лидер", type: "M" }, { t: "Сердечный", type: "F" }, { t: "Дружелюбный", type: "N" },
+        { t: "Сильный", type: "M" }, { t: "Доверчивый", type: "F" }, { t: "Оптимистичный", type: "N" },
+        { t: "Независимый", type: "M" }, { t: "Понимающий", type: "F" }, { t: "Любопытный", type: "N" },
+        { t: "Агрессивный", type: "M" }, { t: "Уступчивый", type: "F" }, { t: "Терпеливый", type: "N" },
+        { t: "Мужественный", type: "M" }, { t: "Женственный", type: "F" }, { t: "Честный", type: "N" },
+        { t: "Деловой", type: "M" }, { t: "Эмоциональный", type: "F" }, { t: "Спокойный", type: "N" },
+        { t: "Смелый", type: "M" }, { t: "Милосердный", type: "F" }, { t: "Внимательный", type: "N" },
+        { t: "Самодостаточный", type: "M" }, { t: "Скромный", type: "F" }, { t: "Творческий", type: "N" },
+        { t: "Рациональный", type: "M" }, { t: "Сопереживающий", type: "F" }, { t: "Ответственный", type: "N" },
+        { t: "Ориентирован на риск", type: "M" }, { t: "Теплый", type: "F" }, { t: "Застенчивый", type: "N" },
+        { t: "Уверенный", type: "M" }, { t: "Чувственный", type: "F" }, { t: "Талантливый", type: "N" },
+        { t: "Индивидуалист", type: "M" }, { t: "Домашний", type: "F" }, { t: "Упрямый", type: "N" },
+        { t: "Настойчивый", type: "M" }, { t: "Покладистый", type: "F" }, { t: "Загадочный", type: "N" }
     ];
 
-    const qDiv = document.getElementById('questions');
-    traits.forEach((t, i) => {
-        qDiv.innerHTML += `<div class="item">
-            <label>${t.name}</label>
-            <select id="q${i}">
-                <option value="1">Почти никогда не описывает меня</option>
-                <option value="4">Средне</option>
-                <option value="7">Почти всегда описывает меня</option>
-            </select>
+    const qDiv = document.getElementById('quiz');
+    items.forEach((item, i) => {
+        qDiv.innerHTML += `<div class="question">
+            <span>${item.t}</span>
+            <select id="q${i}"><option value="0">Нет</option><option value="1">Да</option></select>
         </div>`;
     });
 
     function calculate() {
         let m = 0, f = 0;
-        traits.forEach((t, i) => {
-            let val = parseInt(document.getElementById('q'+i).value);
-            t.type === "M" ? m += val : f += val;
+        items.forEach((item, i) => {
+            if(document.getElementById('q'+i).value == "1") {
+                if(item.type == "M") m++;
+                if(item.type == "F") f++;
+            }
         });
 
-        m /= 10; f /= 10;
-        
-        let type = "";
-        if (m > 5 && f > 5) type = "Андрогинный тип (высокая гибкость).";
-        else if (m > 5) type = "Маскулинный тип (ориентация на достижение).";
-        else if (f > 5) type = "Фемининный тип (ориентация на отношения).";
-        else type = "Недифференцированный тип (низкая выраженность обоих начал).";
+        let conclusion = "";
+        if (m > 12 && f > 12) conclusion = "<b>Андрогинный тип личности.</b> Вы успешно интегрировали в себе как инструментальные (маскулинные), так и экспрессивные (фемининные) качества. Вы способны быть решительными в делах и чуткими в отношениях, что является признаком высокого уровня психологической зрелости.";
+        else if (m > 12) conclusion = "<b>Маскулинный тип личности.</b> В вашей системе приоритетов доминируют инструментальные ценности: достижение целей, независимость и логика. Вы стремитесь контролировать окружающую среду.";
+        else if (f > 12) conclusion = "<b>Фемининный тип личности.</b> Ваш профиль ориентирован на экспрессивные ценности: гармонизацию отношений, поддержку и сопереживание. Вы сильны в эмоциональном интеллекте.";
+        else conclusion = "<b>Недифференцированный тип.</b> Вы используете стратегии адаптации, которые не выражены ярко ни в сторону маскулинности, ни в сторону фемининности. Это может быть как признаком гибкости, так и периодом поиска новых личностных ориентиров.";
 
-        document.getElementById('quiz').style.display = 'none';
+        document.getElementById('quiz').parentElement.style.display = 'none';
         document.getElementById('result').style.display = 'block';
         document.getElementById('report').innerHTML = `
-            <p>Ваши показатели: <b>Маскулинность: ${m.toFixed(1)}</b>, <b>Фемининность: ${f.toFixed(1)}</b>.</p>
-            <h3>Интерпретация: ${type}</h3>
-            <p>Согласно методологии, маскулинность и фемининность — это не противоположности, а два независимых измерения. 
-            Если вы получили высокие баллы по обеим шкалам, вы обладаете <b>андрогинной структурой личности</b> — это считается наиболее адаптированным типом в современном мире, так как позволяет проявлять как решительность (маскулинные черты), так и гибкость (фемининные черты) в зависимости от ситуации. 
-            Если преобладает одна шкала — это не «отклонение», а ваш текущий адаптивный стиль, который помогает вам достигать целей или сохранять отношения. Помните, что данные качества — это инструменты, которые можно развивать осознанно.</p>
+            <p>Результаты теста: <b>Маскулинность: ${m}/20</b>, <b>Фемининность: ${f}/20</b>.</p>
+            <p>${conclusion}</p>
+            <p><b>Почему так посчитано:</b> Методика Бем строится на том, что гендерные роли — это не полюса одной шкалы, а независимые параметры. Высокий балл по обеим шкалам говорит о том, что вы не ограничены гендерными стереотипами. Низкий балл по одной из шкал не означает отсутствие качества, а лишь указывает на то, что данная стратегия поведения не является для вас ведущей в текущем жизненном контексте.</p>
         `;
     }
 </script>

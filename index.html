@@ -2,90 +2,85 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Опросник гендерных ролей</title>
+    <title>Психодиагностический комплекс BSRI</title>
     <style>
-        :root { --bg: #F5F5F7; --card: #FFFFFF; --accent: #0071E3; --text: #1D1D1F; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); padding: 40px 20px; display: flex; justify-content: center; }
-        .container { max-width: 600px; width: 100%; }
-        .card { background: var(--card); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h1 { font-size: 24px; text-align: center; }
-        .question { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #F5F5F7; }
+        :root { --bg: #F5F5F7; --text: #1D1D1F; --accent: #0071E3; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); padding: 40px; display: flex; justify-content: center; }
+        .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 600px; width: 100%; }
+        .trait { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        input[type="number"] { width: 50px; padding: 5px; border: 1px solid #ccc; border-radius: 5px; }
         button { background: var(--accent); color: white; border: none; padding: 15px 30px; border-radius: 980px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 20px; }
-        .result-text { line-height: 1.6; font-size: 16px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="card">
-        <h1>Опросник гендерных ролей (BSRI)</h1>
-        <p style="text-align:center; color:#86868B;">Отметьте «Да», если качество описывает вас, или «Нет», если нет.</p>
-        <div id="quiz"></div>
-        <button onclick="calculate()">Завершить и получить отчет</button>
-    </div>
+<div class="card" id="test-body">
+    <h1>Опросник гендерных ролей (BSRI)</h1>
+    <p>Оцените по шкале от 1 до 7, насколько каждое качество характерно для вас (1 — никогда, 7 — всегда).</p>
+    <div id="items-list"></div>
+    <button onclick="calculateBSRI()">Анализировать профиль</button>
+</div>
 
-    <div id="result" class="card" style="display:none;">
-        <h1>Ваш психологический профиль</h1>
-        <div id="report" class="result-text"></div>
-        <button onclick="location.reload()">Пройти заново</button>
-    </div>
+<div class="card" id="results" style="display:none;">
+    <h1>Отчет по результатам</h1>
+    <div id="output"></div>
+    <button onclick="location.reload()">Сбросить данные</button>
 </div>
 
 <script>
-    // Массив из 60 характеристик (M=Маскулинные, F=Фемининные, N=Нейтральные)
-    const items = [
-        { t: "Самостоятельный", type: "M" }, { t: "Ласковый", type: "F" }, { t: "Аккуратный", type: "N" },
-        { t: "Амбициозный", type: "M" }, { t: "Чувствительный", type: "F" }, { t: "Надежный", type: "N" },
-        { t: "Аналитичный", type: "M" }, { t: "Заботливый", type: "F" }, { t: "Веселый", type: "N" },
-        { t: "Напористый", type: "M" }, { t: "Мягкий", type: "F" }, { t: "Скромный", type: "N" },
-        { t: "Конкурентный", type: "M" }, { t: "Эмпатичный", type: "F" }, { t: "Искренний", type: "N" },
-        { t: "Решительный", type: "M" }, { t: "Миролюбивый", type: "F" }, { t: "Пунктуальный", type: "N" },
-        { t: "Доминирующий", type: "M" }, { t: "Нежный", type: "F" }, { t: "Сдержанный", type: "N" },
-        { t: "Лидер", type: "M" }, { t: "Сердечный", type: "F" }, { t: "Дружелюбный", type: "N" },
-        { t: "Сильный", type: "M" }, { t: "Доверчивый", type: "F" }, { t: "Оптимистичный", type: "N" },
-        { t: "Независимый", type: "M" }, { t: "Понимающий", type: "F" }, { t: "Любопытный", type: "N" },
-        { t: "Агрессивный", type: "M" }, { t: "Уступчивый", type: "F" }, { t: "Терпеливый", type: "N" },
-        { t: "Мужественный", type: "M" }, { t: "Женственный", type: "F" }, { t: "Честный", type: "N" },
-        { t: "Деловой", type: "M" }, { t: "Эмоциональный", type: "F" }, { t: "Спокойный", type: "N" },
-        { t: "Смелый", type: "M" }, { t: "Милосердный", type: "F" }, { t: "Внимательный", type: "N" },
-        { t: "Самодостаточный", type: "M" }, { t: "Скромный", type: "F" }, { t: "Творческий", type: "N" },
-        { t: "Рациональный", type: "M" }, { t: "Сопереживающий", type: "F" }, { t: "Ответственный", type: "N" },
-        { t: "Ориентирован на риск", type: "M" }, { t: "Теплый", type: "F" }, { t: "Застенчивый", type: "N" },
-        { t: "Уверенный", type: "M" }, { t: "Чувственный", type: "F" }, { t: "Талантливый", type: "N" },
-        { t: "Индивидуалист", type: "M" }, { t: "Домашний", type: "F" }, { t: "Упрямый", type: "N" },
-        { t: "Настойчивый", type: "M" }, { t: "Покладистый", type: "F" }, { t: "Загадочный", type: "N" }
+    const bsrItems = [
+        {t: "Самостоятельный", type: "M"}, {t: "Ласковый", type: "F"}, {t: "Аккуратный", type: "N"},
+        {t: "Амбициозный", type: "M"}, {t: "Чувствительный", type: "F"}, {t: "Надежный", type: "N"},
+        {t: "Аналитичный", type: "M"}, {t: "Заботливый", type: "F"}, {t: "Веселый", type: "N"},
+        {t: "Напористый", type: "M"}, {t: "Мягкий", type: "F"}, {t: "Скромный", type: "N"},
+        {t: "Конкурентный", type: "M"}, {t: "Эмпатичный", type: "F"}, {t: "Искренний", type: "N"},
+        {t: "Решительный", type: "M"}, {t: "Миролюбивый", type: "F"}, {t: "Пунктуальный", type: "N"},
+        {t: "Доминирующий", type: "M"}, {t: "Нежный", type: "F"}, {t: "Сдержанный", type: "N"},
+        {t: "Лидер", type: "M"}, {t: "Сердечный", type: "F"}, {t: "Дружелюбный", type: "N"},
+        {t: "Сильный", type: "M"}, {t: "Доверчивый", type: "F"}, {t: "Оптимистичный", type: "N"},
+        {t: "Независимый", type: "M"}, {t: "Понимающий", type: "F"}, {t: "Любопытный", type: "N"},
+        {t: "Агрессивный", type: "M"}, {t: "Уступчивый", type: "F"}, {t: "Терпеливый", type: "N"},
+        {t: "Мужественный", type: "M"}, {t: "Женственный", type: "F"}, {t: "Честный", type: "N"},
+        {t: "Деловой", type: "M"}, {t: "Эмоциональный", type: "F"}, {t: "Спокойный", type: "N"},
+        {t: "Смелый", type: "M"}, {t: "Милосердный", type: "F"}, {t: "Внимательный", type: "N"},
+        {t: "Самодостаточный", type: "M"}, {t: "Скромный", type: "F"}, {t: "Творческий", type: "N"},
+        {t: "Рациональный", type: "M"}, {t: "Сопереживающий", type: "F"}, {t: "Ответственный", type: "N"},
+        {t: "Рисковый", type: "M"}, {t: "Теплый", type: "F"}, {t: "Застенчивый", type: "N"},
+        {t: "Уверенный", type: "M"}, {t: "Чувственный", type: "F"}, {t: "Талантливый", type: "N"},
+        {t: "Индивидуалист", type: "M"}, {t: "Домашний", type: "F"}, {t: "Упрямый", type: "N"}
     ];
 
-    const qDiv = document.getElementById('quiz');
-    items.forEach((item, i) => {
-        qDiv.innerHTML += `<div class="question">
-            <span>${item.t}</span>
-            <select id="q${i}"><option value="0">Нет</option><option value="1">Да</option></select>
-        </div>`;
+    const list = document.getElementById('items-list');
+    bsrItems.forEach((item, i) => {
+        list.innerHTML += `<div class="trait"><span>${item.t}</span><input type="number" min="1" max="7" value="4" id="r${i}"></div>`;
     });
 
-    function calculate() {
+    function calculateBSRI() {
         let m = 0, f = 0;
-        items.forEach((item, i) => {
-            if(document.getElementById('q'+i).value == "1") {
-                if(item.type == "M") m++;
-                if(item.type == "F") f++;
-            }
+        bsrItems.forEach((item, i) => {
+            let val = parseInt(document.getElementById('r'+i).value);
+            if(item.type === "M") m += val;
+            if(item.type === "F") f += val;
         });
+        m /= 20; f /= 20;
 
-        let conclusion = "";
-        if (m > 12 && f > 12) conclusion = "<b>Андрогинный тип личности.</b> Вы успешно интегрировали в себе как инструментальные (маскулинные), так и экспрессивные (фемининные) качества. Вы способны быть решительными в делах и чуткими в отношениях, что является признаком высокого уровня психологической зрелости.";
-        else if (m > 12) conclusion = "<b>Маскулинный тип личности.</b> В вашей системе приоритетов доминируют инструментальные ценности: достижение целей, независимость и логика. Вы стремитесь контролировать окружающую среду.";
-        else if (f > 12) conclusion = "<b>Фемининный тип личности.</b> Ваш профиль ориентирован на экспрессивные ценности: гармонизацию отношений, поддержку и сопереживание. Вы сильны в эмоциональном интеллекте.";
-        else conclusion = "<b>Недифференцированный тип.</b> Вы используете стратегии адаптации, которые не выражены ярко ни в сторону маскулинности, ни в сторону фемининности. Это может быть как признаком гибкости, так и периодом поиска новых личностных ориентиров.";
+        // Расчет андрогинности по формуле t-критерия (упрощенно для веба)
+        let report = `<h2>Ваш гендерный профиль</h2>
+            <p>Индекс маскулинности: <b>${m.toFixed(2)}</b> (Инструментальность)</p>
+            <p>Индекс фемининности: <b>${f.toFixed(2)}</b> (Экспрессивность)</p>
+            <h3>Аналитический отчет:</h3>
+            <p>${generateInterpretation(m, f)}</p>`;
+        
+        document.getElementById('test-body').style.display = 'none';
+        document.getElementById('results').style.display = 'block';
+        document.getElementById('output').innerHTML = report;
+    }
 
-        document.getElementById('quiz').parentElement.style.display = 'none';
-        document.getElementById('result').style.display = 'block';
-        document.getElementById('report').innerHTML = `
-            <p>Результаты теста: <b>Маскулинность: ${m}/20</b>, <b>Фемининность: ${f}/20</b>.</p>
-            <p>${conclusion}</p>
-            <p><b>Почему так посчитано:</b> Методика Бем строится на том, что гендерные роли — это не полюса одной шкалы, а независимые параметры. Высокий балл по обеим шкалам говорит о том, что вы не ограничены гендерными стереотипами. Низкий балл по одной из шкал не означает отсутствие качества, а лишь указывает на то, что данная стратегия поведения не является для вас ведущей в текущем жизненном контексте.</p>
-        `;
+    function generateInterpretation(m, f) {
+        if (m > 4.9 && f > 4.9) return "Вы обладаете <b>андрогинным профилем</b>. Это состояние психологической интеграции, при котором личность свободна от жестких гендерных стереотипов. Вы эффективно сочетаете агентность (действие) и общинность (чувства). Это позволяет вам адаптироваться к любым социальным вызовам, выбирая наиболее подходящую стратегию поведения, а не ту, что «предписана» биологическим полом.";
+        if (m > f) return "Ваш профиль демонстрирует <b>выраженную маскулинную ориентацию</b>. Вы опираетесь на инструментальные стратегии: контроль, логику, достижение целей и автономию. Ваша «Тень» — это подавление экспрессивных аспектов (эмпатии, мягкости), которые могут быть необходимы для глубокой межличностной коммуникации.";
+        if (f > m) return "Ваш профиль демонстрирует <b>выраженную фемининную ориентацию</b>. Вы опираетесь на экспрессивные стратегии: заботу, эмпатию, эмоциональную связь и создание гармонии. Ваша «Тень» — это потенциальная нехватка жесткости в отстаивании границ, что может приводить к самопожертвованию во вред собственным амбициям.";
+        return "Ваш профиль характеризуется как <b>низкодифференцированный</b>. Это может свидетельствовать о переходном этапе идентичности, когда старые способы адаптации ослабли, а новые еще не сформированы. Рекомендуется обратить внимание на развитие обеих сторон — как личных амбиций, так и навыков эмоциональной близости.";
     }
 </script>
 </body>

@@ -13,7 +13,6 @@
         .main-btn { background: var(--accent); color: white; }
         .no { background: #E5E5EA; color: #3A3A3C; }
         .analysis-box { text-align: left; background: rgba(0,0,0,0.03); padding: 25px; border-radius: 20px; margin-top: 20px; line-height: 1.7; }
-        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -21,9 +20,9 @@
 <div class="container">
     <div class="card" id="start">
         <h1>BSRI Psychometrics</h1>
-        <p>Выберите пол для калибровки и адаптации теста:</p>
-        <button class="main-btn" style="background:#0071E3;" onclick="startQuiz('male')">Мужчина</button>
-        <button class="main-btn" style="background:#D81B60;" onclick="startQuiz('female')">Женщина</button>
+        <p>Выберите пол для калибровки нормативной модели:</p>
+        <button id="btn-m" class="main-btn" style="background:#0071E3;" onclick="startQuiz('male')">Мужчина</button>
+        <button id="btn-f" class="main-btn" style="background:#D81B60;" onclick="startQuiz('female')">Женщина</button>
     </div>
 
     <div class="card hidden" id="quiz">
@@ -41,8 +40,7 @@
 </div>
 
 <script>
-    // Массив вопросов (указаны в мужском роде, скрипт адаптирует их)
-    const baseItems = [
+    const items = [
         {t: "Самостоятельный", type: "M"}, {t: "Ласковый", type: "F"}, {t: "Аккуратный", type: "N"},
         {t: "Амбициозный", type: "M"}, {t: "Чувствительный", type: "F"}, {t: "Надежный", type: "N"},
         {t: "Аналитичный", type: "M"}, {t: "Заботливый", type: "F"}, {t: "Веселый", type: "N"},
@@ -50,13 +48,19 @@
         {t: "Конкурентный", type: "M"}, {t: "Эмпатичный", type: "F"}, {t: "Искренний", type: "N"},
         {t: "Решительный", type: "M"}, {t: "Миролюбивый", type: "F"}, {t: "Пунктуальный", type: "N"},
         {t: "Доминирующий", type: "M"}, {t: "Нежный", type: "F"}, {t: "Сдержанный", type: "N"},
+        {t: "Лидер", type: "M"}, {t: "Сердечный", type: "F"}, {t: "Дружелюбный", type: "N"},
         {t: "Сильный", type: "M"}, {t: "Доверчивый", type: "F"}, {t: "Оптимистичный", type: "N"},
         {t: "Независимый", type: "M"}, {t: "Понимающий", type: "F"}, {t: "Любопытный", type: "N"},
         {t: "Агрессивный", type: "M"}, {t: "Уступчивый", type: "F"}, {t: "Терпеливый", type: "N"},
         {t: "Мужественный", type: "M"}, {t: "Женственный", type: "F"}, {t: "Честный", type: "N"},
         {t: "Деловой", type: "M"}, {t: "Эмоциональный", type: "F"}, {t: "Спокойный", type: "N"},
         {t: "Смелый", type: "M"}, {t: "Милосердный", type: "F"}, {t: "Внимательный", type: "N"},
-        {t: "Самодостаточный", type: "M"}, {t: "Скромный", type: "F"}, {t: "Творческий", type: "N"}
+        {t: "Самодостаточный", type: "M"}, {t: "Скромный", type: "F"}, {t: "Творческий", type: "N"},
+        {t: "Рациональный", type: "M"}, {t: "Сопереживающий", type: "F"}, {t: "Ответственный", type: "N"},
+        {t: "Склонный к риску", type: "M"}, {t: "Теплый", type: "F"}, {t: "Застенчивый", type: "N"},
+        {t: "Уверенный", type: "M"}, {t: "Чувственный", type: "F"}, {t: "Талантливый", type: "N"},
+        {t: "Индивидуалист", type: "M"}, {t: "Домашний", type: "F"}, {t: "Упрямый", type: "N"},
+        {t: "Настойчивый", type: "M"}, {t: "Покладистый", type: "F"}, {t: "Загадочный", type: "N"}
     ];
 
     let current = 0, mScore = 0, fScore = 0, nScore = 0, userGender = "";
@@ -64,6 +68,7 @@
     function startQuiz(gender) {
         userGender = gender;
         const root = document.documentElement;
+        // Применяем цветовую схему ко всему интерфейсу
         if (gender === 'male') {
             root.style.setProperty('--bg', '#E0E8F0');
             root.style.setProperty('--accent', '#0071E3');
@@ -76,23 +81,16 @@
         showQ();
     }
 
-    function showQ() {
-        let text = baseItems[current].t;
-        // Простая логика адаптации окончаний для женского рода
-        if (userGender === 'female') {
-            text = text.replace(/ый$/, "ая").replace(/ий$/, "ая").replace(/ичный$/, "ичная").replace(/ный$/, "ная");
-        }
-        document.getElementById('q-text').innerText = text;
-    }
+    function showQ() { document.getElementById('q-text').innerText = items[current].t; }
 
     function answer(val) {
         if(val === 1) {
-            if(baseItems[current].type === 'M') mScore++;
-            if(baseItems[current].type === 'F') fScore++;
-            if(baseItems[current].type === 'N') nScore++;
+            if(items[current].type === 'M') mScore++;
+            if(items[current].type === 'F') fScore++;
+            if(items[current].type === 'N') nScore++;
         }
         current++;
-        current < baseItems.length ? showQ() : finish();
+        current < items.length ? showQ() : finish();
     }
 
     function finish() {
@@ -101,20 +99,16 @@
         document.getElementById('report-text').innerHTML = `
             <h2 style="text-align:center">Аналитический отчет</h2>
             <div class="analysis-box">
-                Маскулинность: ${mScore} | Фемининность: ${fScore} | Андрогинность: ${nScore}
+                Маскулинность: ${mScore}/20 | Фемининность: ${fScore}/20 | Андрогинность: ${nScore}/20
             </div>
             <div class="analysis-box">${generateDeepAnalysis()}</div>`;
     }
 
     function generateDeepAnalysis() {
-        if (mScore >= 12 && fScore >= 12) return "<strong>Статус: Андрогинность.</strong><br>Гармоничное сочетание Маскулинности и Фемининности.";
-        if (userGender === 'male') {
-            return (fScore > mScore) ? "<strong>Ваш профиль: Фемининный.</strong><br>Для развития <b>Маскулинности</b>: практикуйте решительность и принятие личной ответственности." 
-                                     : "<strong>Ваш профиль: Маскулинный.</strong><br>Для гармонии: развивайте эмпатическое слушание и позволяйте себе уязвимость.";
-        } else {
-            return (mScore > fScore) ? "<strong>Ваш профиль: Маскулинный.</strong><br>Для развития <b>Фемининности</b>: делегируйте задачи и практикуйте мягкость в коммуникации." 
-                                     : "<strong>Ваш профиль: Фемининный.</strong><br>Для усиления <b>Маскулинности</b>: учитесь формировать личную позицию и говорить «нет» требованиям группы.";
-        }
+        if (mScore >= 12 && fScore >= 12) return "Ваш результат — <b>Андрогинность</b>: в личности гармонично сочетаются Маскулинность и Фемининность.";
+        if (mScore > fScore) return "Ваш профиль — <b>Маскулинность</b>: доминируют стратегии контроля и достижения.";
+        if (fScore > mScore) return "Ваш профиль — <b>Фемининность</b>: доминируют стратегии гармонизации и эмпатии.";
+        return "Ваш профиль — <b>Недифференцированный</b>: требуется осознанное развитие Маскулинности и Фемининности.";
     }
 </script>
 </body>

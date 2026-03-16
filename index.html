@@ -165,7 +165,33 @@
             // Низкие баллы по обоим шкалам
             report += `<p style="margin-top:15px;">Ваш профиль предполагает поиск новых опор. Рекомендуется начать с развития базовых качеств уверенности и навыков понимания своих чувств.</p>`;
         }
+// Расчет индекса IS (Gender Schema)
+    // Индекс показывает дистанцию между шкалами. Чем ближе к 0, тем выше андрогинность.
+    let diff = Math.abs(mScore - fScore);
+    let schemaStatus = "";
+    let schemaDesc = "";
 
+    if (diff <= 2) {
+        schemaStatus = "Минимальная (Свобода от стереотипов)";
+        schemaDesc = "Вы не делите мир на 'мужское' и 'женское'. Ваше поведение диктуется ситуацией, а не социальными ожиданиями.";
+    } else if (diff > 2 && diff <= 5) {
+        schemaStatus = "Умеренная";
+        schemaDesc = "У вас есть склонность придерживаться определенной гендерной роли, но вы сохраняете пространство для маневра.";
+    } else {
+        schemaStatus = "Высокая (Гендерная зажатость)";
+        schemaDesc = "Вы сильно опираетесь на традиционные модели поведения. Это дает определенность, но может ограничивать вашу эмоциональную и деловую гибкость.";
+    }
+
+    // Добавляем этот блок в итоговый отчет
+    report += `
+        <div style="margin-top: 20px; border-top: 1px solid #ddd; pt-15px;">
+            <h4 style="margin-bottom:10px;">Индекс гендерной схематизации (по С. Бем)</h4>
+            <div style="background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 12px;">
+                <span class="badge" style="background: #444; color: #fff; font-size: 12px;">Уровень схематизации: ${schemaStatus}</span>
+                <p style="font-size: 14px; margin-top: 10px; color: #444;">${schemaDesc}</p>
+            </div>
+        </div>
+    `;
         return report;
     }
 </script>
